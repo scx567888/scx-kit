@@ -3,13 +3,13 @@
     <h2>点击图标即可复制代码</h2>
     <h3>填充图标 {{ filledIconList.length }} 个</h3>
     <div style="display: flex;flex-wrap: wrap">
-      <div v-for="item in filledIconList" class="icon-item" :data-clipboard-text="copyIcon('filled-'+item)">
+      <div v-for="item in filledIconList" :data-clipboard-text="copyIcon('filled-'+item)" class="icon-item">
         <scx-icon :icon="'filled-'+item"/>
       </div>
     </div>
     <h3>线框图标 {{ outlinedIconList.length }} 个</h3>
     <div style="display: flex;flex-wrap: wrap">
-      <div v-for="item in outlinedIconList" class="icon-item" :data-clipboard-text="copyIcon('outlined-'+item)">
+      <div v-for="item in outlinedIconList" :data-clipboard-text="copyIcon('outlined-'+item)" class="icon-item">
         <scx-icon :icon="'outlined-'+item"/>
       </div>
     </div>

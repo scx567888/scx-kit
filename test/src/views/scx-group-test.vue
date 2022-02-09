@@ -1,7 +1,7 @@
 <template>
-  <scx-group v-model="data" :default-item-value="{name:'',age:'',c:[]}"
-             :beforeAdd="aaa"
+  <scx-group v-model="data" :beforeAdd="aaa"
              :beforeRemove="bbb"
+             :default-item-value="{name:'',age:'',c:[]}"
   >
     <template #default="{item,index}">
       <div class="test-input-wrapper">
