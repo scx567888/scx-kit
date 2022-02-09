@@ -30,6 +30,11 @@
     transform: translateY(-30px);
 }
 
-.scx-group-list-leave-active{
+.scx-group-list-leave-active {
     position: absolute;
+}
+
+/* 重要 !!!!!  避免嵌套动画延迟 */
+.scx-group-list-move .scx-group-list-move {
+    transition: unset;
 }
