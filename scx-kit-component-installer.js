@@ -1,9 +1,9 @@
+import {ScxContextMenuDirective, ScxCrud, ScxDragDirective, ScxGroup, ScxIcon} from './scx-kit.js';
+
 //以下为组件
+const components = [ScxIcon, ScxCrud, ScxGroup];
+
 //以下为指令
-import {ScxContextMenuDirective, ScxDragDirective, ScxIcon} from './scx-kit.js';
-
-const components = [ScxIcon];
-
 const directives = [ScxContextMenuDirective, ScxDragDirective];
 
 const ScxKitComponentInstaller = {
