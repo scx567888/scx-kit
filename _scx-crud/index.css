@@ -44,23 +44,3 @@
 .scx-crud-main {
 
 }
-
-/*强制设置内部所有的 textarea 的字体 */
-.scx-crud textarea {
-    font-family: inherit;
-}
-
-/*---------------------- 一些其余的 css ----------------------*/
-
-/*添加修改页面的 label 使其变粗*/
-.scx-crud .el-form-item__label {
-    font-weight: 700;
-}
-
-.scx-crud .el-form-item__content {
-    width: 220px;
-}
-
-.scx-crud .el-form-item__content > * {
-    width: 100%;
-}
