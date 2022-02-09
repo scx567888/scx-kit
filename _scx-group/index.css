@@ -1,0 +1,40 @@
+.scx-group {
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+    align-items: center;
+    padding: 10px;
+}
+
+.scx-group-item {
+    width: 100%;
+    border: 1px dashed #c8c8c8;
+    background-color: rgba(24, 144, 255, 0.1);
+    transition: transform 600ms ease, opacity 600ms ease;
+}
+
+.scx-group-item-content {
+    width: 100%;
+}
+
+/*以下为 vue 动画*/
+.scx-group-list-enter-from {
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.scx-group-list-leave-to {
+    opacity: 0;
+    transform: translateY(-30px);
+}
+
+.scx-group-list-leave-active {
+    position: absolute;
+}
+
+/* 重要 !!!!!  避免嵌套动画延迟 */
+.scx-group-list-move .scx-group-list-move {
+    transition: unset;
+}

@@ -48,6 +48,23 @@ const ScxRouter = createRouter({
                 perms: []
             },
         },
+        {
+            path: '/scx-crud-test',
+            name: 'scx-crud-test',
+            component: () => import('./views/scx-crud-test.vue'),
+            meta: {
+                icon: 'filled-message',
+                perms: []
+            },
+        }, {
+            path: '/scx-group-test',
+            name: 'scx-group-test',
+            component: () => import('./views/scx-group-test.vue'),
+            meta: {
+                icon: 'filled-message',
+                perms: []
+            },
+        },
     ]
 });
 
