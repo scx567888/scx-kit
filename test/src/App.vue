@@ -6,6 +6,7 @@
   <router-link style="margin-right: 5px" to="/scx-xlsx-test">XLSX导出测试</router-link>
   <router-link style="margin-right: 5px" to="/scx-crud-test">ScxCrud测试</router-link>
   <router-link style="margin-right: 5px" to="/scx-group-test">ScxGroup测试</router-link>
+  <router-link style="margin-right: 5px" to="/listToTree-test">ListToTree测试</router-link>
   <router-view/>
 </template>
 
