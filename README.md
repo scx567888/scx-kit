@@ -40,19 +40,10 @@
 
 ## 快速开始
 
-项目要求 Node.js 版本 >= 16
-
-1, 运行
+#### 1. 导入依赖 。
 
 ```
--> npm install
--> npm run dev
-```
-
-2, 打包
-
-```
--> npm run build
+npm install scx-kit
 ```
 
 更多信息请查看 [文档 | DOCS](https://scx.cool/docs/scx-kit/index.html)
