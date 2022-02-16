@@ -1,4 +1,4 @@
-import XLSX from 'xlsx'
+import {utils, write} from 'xlsx'
 import {download} from "./vanilla-download.js";
 
 //此方法其实是从 xlsx 中拷贝出来的
@@ -51,12 +51,12 @@ function exportExcel({headerTranslationMap, listData, filename = "Exported-Excel
     //创建 工作簿 (workbook)
     const workbook = {
         SheetNames: ['Sheet1'], Sheets: {
-            Sheet1: XLSX.utils.aoa_to_sheet(twoDimensionalArray)
+            Sheet1: utils.aoa_to_sheet(twoDimensionalArray)
         }
     };
 
     // 获取可写入对象
-    const wb = XLSX.write(workbook, {
+    const wb = write(workbook, {
         bookType: bookType, bookSST: false, type: 'binary'
     });
 
