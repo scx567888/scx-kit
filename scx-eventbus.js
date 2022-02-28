@@ -4,14 +4,14 @@ class WebSocketHelper {
         const LOVE = "❤";
         // 连接url 需要从外部传过来
         const wsUrl = _wsUrl;
+        // 因连接状态发送失败的请求 都会以方法的形式被存储到这里 待到下一次连接成功时 全部发送给服务器
+        const FAILED_SEND_EVENT_LIST = [];
         // 连接对象
         let WEB_SOCKET = null;
         // 防止重复触发重连方法的锁
         let lockReconnect = false;
         // 心跳检测定时器
         let startLoveInterval = null;
-        // 因连接状态发送失败的请求 都会以方法的形式被存储到这里 待到下一次连接成功时 全部发送给服务器
-        const FAILED_SEND_EVENT_LIST = [];
 
         this.onmessage = (data) => {
             console.log(data)
