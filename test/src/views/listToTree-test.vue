@@ -21,7 +21,7 @@ const listData = ref([
   {f: 888, d: 666},
 ]);
 
-const treeData = computed(() => listToTree(listData.value,{idFieldName:'f',parentIDFieldName:'d'}));
+const treeData = computed(() => listToTree(listData.value, {idFieldName: 'f', parentIDFieldName: 'd'}));
 
 </script>
 
