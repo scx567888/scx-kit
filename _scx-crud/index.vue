@@ -1,7 +1,7 @@
 <template>
   <div class="scx-crud">
     <!-- 头部 -->
-    <header class="scx-crud-header">
+    <header class="scx-crud-header" v-if="$slots['header-left']||$slots['header-right']">
       <!-- 头部左侧 (一般放操作项 如 : 添加按钮 , 导出按钮) -->
       <div class="scx-crud-header-left">
         <slot name="header-left"/>
@@ -13,12 +13,12 @@
     </header>
 
     <!-- 主内容区 一般放一个表格 -->
-    <main class="scx-crud-main">
+    <main class="scx-crud-main" v-if="$slots['main']">
       <slot name="main"/>
     </main>
 
     <!-- 底部内容区 一般放分页或批量删除按钮 (远离顶部防止误操作) -->
-    <footer class="scx-crud-footer">
+    <footer class="scx-crud-footer" v-if="$slots['footer']">
       <slot name="footer"/>
     </footer>
 
