@@ -11,30 +11,38 @@ function listToTree(source, rawOptions = {}) {
         ignoreOrphans = false // 是否忽略孤儿节点
     } = rawOptions;
     //只处理数组结构
-    if (source && Array.isArray(source)) {
-        let cloneData = JSON.parse(JSON.stringify(source));  // 对源数据深度克隆
-        return cloneData.filter(father => {                      // 循环所有项，并添加 children 属性
-            const fatherID = father[idFieldName]; //父 id
-            const grandpaID = father[parentIDFieldName]; //爷爷 id
-            //判断是否为孤儿 , 如果查询不到他的父级节点 那么他就是孤儿
-            let isOrphan = false;
-            if (!ignoreOrphans) {
-                isOrphan = cloneData.filter(child => grandpaID === child[idFieldName]).length === 0;  // 返回每一项的子级数组
-            }
-            if (fatherID) {
-                let fatherChildren = cloneData.filter(child => fatherID === child[parentIDFieldName]);  // 返回每一项的子级数组
-                if (fatherChildren.length > 0) {
-                    father[childrenFieldName] = fatherChildren;
-                }
-            }
-            const fatherFatherID = father[parentIDFieldName];
-            //最顶级节点为 父节点为空 或 孤儿
-            return fatherFatherID === null || fatherFatherID === undefined || isOrphan;
-        });
-    } else {
+    if (!source || !Array.isArray(source)) {
         console.warn("listToTree : 数据为空或数据格式有误 (正确情况应为 Array) !!!")
         return [];
     }
+    let cloneData = JSON.parse(JSON.stringify(source));  // 对源数据深度克隆
+    const idMap = new Map();
+    const parentIDMap = new Map();
+    for (let t of cloneData) {
+        idMap.set(t[idFieldName], t);
+        const v = parentIDMap.get(t[parentIDFieldName]);
+        if (v) {
+            v.push(t);
+        } else {
+            parentIDMap.set(t[parentIDFieldName], [t])
+        }
+    }
+    // 循环所有项，并添加 children 属性
+    return cloneData.filter(my => {
+        const myID = my[idFieldName]; //我自己的 id
+        const parentID = my[parentIDFieldName]; //我父亲的 id
+        //判断是否为孤儿 , 如果查询不到他的父级节点 那么他就是孤儿
+        let isOrphan = !ignoreOrphans && (parentID == null || idMap.get(parentID) == null);
+        if (myID) {
+            // 返回每一项的子级数组
+            const myChildren = parentIDMap.get(myID);
+            if (myChildren && myChildren.length > 0) {
+                my[childrenFieldName] = myChildren;
+            }
+        }
+        //需要返回的节点 1, 是根节点 2, 是孤儿节点
+        return parentID === null || parentID === undefined || isOrphan;
+    });
 
 }
 
