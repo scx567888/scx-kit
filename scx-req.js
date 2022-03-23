@@ -134,22 +134,27 @@ class ScxReq {
 
     setAuthHeaders(authHeaders) {
         this.#authHeaders = authHeaders;
+        return this;
     }
 
     setNoPermHandler(noPermHandler) {
         this.#noPermHandler = noPermHandler;
+        return this;
     }
 
     setUnauthorizedHandler(unauthorizedHandler) {
         this.#unauthorizedHandler = unauthorizedHandler;
+        return this;
     }
 
     setServerErrorHandler(serverErrorHandler) {
         this.#serverErrorHandler = serverErrorHandler;
+        return this;
     }
 
     setUnKnowErrorHandler(unKnowErrorHandler) {
         this.#unKnowErrorHandler = unKnowErrorHandler;
+        return this;
     }
 
     //另一个是根据后台 json 的格式约定 将所有 message != ok 的视为 错误
