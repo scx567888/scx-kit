@@ -10,8 +10,8 @@ export default {
   setup() {
 
     function exportXLSX() {
-      var headTranslation = {name: '姓名', idCard: '身份证号码', age: "年龄",}
-      var data = []
+      const headTranslation = {name: '姓名', idCard: '身份证号码', age: "年龄",};
+      const data = [];
       for (let i = 0; i < 999; i++) {
         data.push({name: '张三' + 1, age: i, idCard: "202001999192929" + i})
       }
