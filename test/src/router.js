@@ -42,6 +42,11 @@ const ScxRouter = createRouter({
             name: 'listToTree-test',
             component: () => import('./views/listToTree-test.vue'),
         },
+        {
+            path: '/scx-fss-test',
+            name: 'scx-fss-test',
+            component: () => import('./views/scx-fss-test.vue'),
+        },
     ]
 });
 
