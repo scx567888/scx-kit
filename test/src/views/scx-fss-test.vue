@@ -1,6 +1,6 @@
 <template>
   <input type="file" @change="upload">
-  <img v-if="nowFile.fssObjectID" :src="fss.joinImageURL(nowFile.fssObjectID)" style="height: 500px;width: 500px;">
+  <img v-if="nowFile.fssObjectID" :src="fss.joinImageURL(nowFile.fssObjectID)" style="height: 500px;width: 500px;" alt="img">
   <br>
   {{ nowFile }}
 </template>
