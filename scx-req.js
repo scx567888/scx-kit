@@ -117,43 +117,43 @@ class ScxReq {
         return ScxReq.baseReq(url, headers, body, "DELETE");
     }
 
-    #authHeaders = () => {
+    authHeaders = () => {
         return {};
     };
 
-    #noPermHandler = () => console.warn('NoPerm!!!');
+    noPermHandler = () => console.warn('NoPerm!!!');
 
-    #unauthorizedHandler = () => console.warn('Unauthorized!!!');
+    unauthorizedHandler = () => console.warn('Unauthorized!!!');
 
-    #serverErrorHandler = () => console.warn('ServerError!!!');
+    serverErrorHandler = () => console.warn('ServerError!!!');
 
-    #unKnowErrorHandler = (data) => console.warn('UnKnowError : ' + data);
+    unKnowErrorHandler = (data) => console.warn('UnKnowError : ' + data);
 
     //这里将两种情况视为错误
     //一个是由 req0 返回的错误 包括 : 网络错误 和 状态码不在 200-299 之间
 
     setAuthHeaders(authHeaders) {
-        this.#authHeaders = authHeaders;
+        this.authHeaders = authHeaders;
         return this;
     }
 
     setNoPermHandler(noPermHandler) {
-        this.#noPermHandler = noPermHandler;
+        this.noPermHandler = noPermHandler;
         return this;
     }
 
     setUnauthorizedHandler(unauthorizedHandler) {
-        this.#unauthorizedHandler = unauthorizedHandler;
+        this.unauthorizedHandler = unauthorizedHandler;
         return this;
     }
 
     setServerErrorHandler(serverErrorHandler) {
-        this.#serverErrorHandler = serverErrorHandler;
+        this.serverErrorHandler = serverErrorHandler;
         return this;
     }
 
     setUnKnowErrorHandler(unKnowErrorHandler) {
-        this.#unKnowErrorHandler = unKnowErrorHandler;
+        this.unKnowErrorHandler = unKnowErrorHandler;
         return this;
     }
 
@@ -170,13 +170,13 @@ class ScxReq {
             //此处针对一些常见的 错误进行处理 例如 权限问题
             const status = error.status;
             if (status === 401) {
-                this.#unauthorizedHandler();
+                this.unauthorizedHandler();
             } else if (status === 403) {
-                this.#noPermHandler();
+                this.noPermHandler();
             } else if (status === 500) {
-                this.#serverErrorHandler();
+                this.serverErrorHandler();
             } else {
-                this.#unKnowErrorHandler(error);
+                this.unKnowErrorHandler(error);
             }
             reject(error);
         }));
@@ -189,7 +189,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     get(url, data = null) {
-        return this.checkPerms(ScxReq.get(this.scxApiHelper.joinHttpUrl(url), this.#authHeaders(), data))
+        return this.checkPerms(ScxReq.get(this.scxApiHelper.joinHttpUrl(url), this.authHeaders(), data))
     };
 
     /**
@@ -199,7 +199,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     post(url, data = null) {
-        return this.checkPerms(ScxReq.post(this.scxApiHelper.joinHttpUrl(url), this.#authHeaders(), data));
+        return this.checkPerms(ScxReq.post(this.scxApiHelper.joinHttpUrl(url), this.authHeaders(), data));
     };
 
     /**
@@ -209,7 +209,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     put(url, data = null) {
-        return this.checkPerms(ScxReq.put(this.scxApiHelper.joinHttpUrl(url), this.#authHeaders(), data))
+        return this.checkPerms(ScxReq.put(this.scxApiHelper.joinHttpUrl(url), this.authHeaders(), data))
     };
 
     /**
@@ -219,7 +219,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     delete(url, data = null) {
-        return this.checkPerms(ScxReq.delete(this.scxApiHelper.joinHttpUrl(url), this.#authHeaders(), data))
+        return this.checkPerms(ScxReq.delete(this.scxApiHelper.joinHttpUrl(url), this.authHeaders(), data))
     };
 }
 

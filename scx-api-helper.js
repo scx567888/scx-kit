@@ -3,16 +3,16 @@
  */
 class ScxApiHelper {
 
-    #httpURL;
-    #webSocketURL;
+    httpURL;
+    webSocketURL;
 
     constructor(httpURL) {
         if (!ScxApiHelper.isHttpURL(httpURL)) {
             throw new Error("httpURL 必须是一个合法的 HTTP 路径");
         }
-        this.#httpURL = (httpURL.endsWith("/") ? httpURL.substring(0, httpURL.length - 1) : httpURL).trim();
-        const isUseSSL = this.#httpURL.startsWith("https://"); //此处判断是否使用了 SSL
-        this.#webSocketURL = (isUseSSL ? 'wss://' : 'ws://') + this.#httpURL.split("://")[1];
+        this.httpURL = (httpURL.endsWith("/") ? httpURL.substring(0, httpURL.length - 1) : httpURL).trim();
+        const isUseSSL = this.httpURL.startsWith("https://"); //此处判断是否使用了 SSL
+        this.webSocketURL = (isUseSSL ? 'wss://' : 'ws://') + this.httpURL.split("://")[1];
     }
 
     /**
@@ -48,7 +48,7 @@ class ScxApiHelper {
      * @returns {*}
      */
     joinHttpUrl(url) {
-        return ScxApiHelper.isExternal(url) ? url : this.#httpURL + ScxApiHelper.cleanURL(url);
+        return ScxApiHelper.isExternal(url) ? url : this.httpURL + ScxApiHelper.cleanURL(url);
     }
 
     /**
@@ -57,23 +57,7 @@ class ScxApiHelper {
      * @returns {string}
      */
     joinWebSocketURL(url) {
-        return this.#webSocketURL + ScxApiHelper.cleanURL(url);
-    }
-
-    /**
-     * 获取 http 的 URL
-     * @returns {string|*}
-     */
-    httpURL() {
-        return this.#httpURL;
-    }
-
-    /**
-     * 获取 webSocket 的 URL
-     * @returns {string}
-     */
-    webSocketURL() {
-        return this.#webSocketURL;
+        return this.webSocketURL + ScxApiHelper.cleanURL(url);
     }
 
 }

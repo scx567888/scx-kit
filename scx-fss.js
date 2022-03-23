@@ -23,14 +23,14 @@ class FSSObject {
  */
 class ScxFSS {
     scxReq
-    #maxUploadSize = 10 * 1024 * 1024 * 1024;//最大上传文件 写死 10GB
-    #chunkSize = 2 * 1024 * 1024;//切片大小 这里写死 2MB
-    #uploadURL = '/api/fss/upload'; //上传 url
-    #listURL = '/api/fss/list'; // 列表 url
-    #rawURL = '/api/fss/raw/';//raw 的 url
-    #imageURL = '/api/fss/image/';//image 的 url
-    #downloadURL = '/api/fss/download/'; //download 的 url
-    #checkAnyFileExistsByThisMD5URL = '/api/fss/check-any-file-exists-by-this-md5';
+    maxUploadSize = 10 * 1024 * 1024 * 1024;//最大上传文件 写死 10GB
+    chunkSize = 2 * 1024 * 1024;//切片大小 这里写死 2MB
+    uploadURL = '/api/fss/upload'; //上传 url
+    listURL = '/api/fss/list'; // 列表 url
+    rawURL = '/api/fss/raw/';//raw 的 url
+    imageURL = '/api/fss/image/';//image 的 url
+    downloadURL = '/api/fss/download/'; //download 的 url
+    checkAnyFileExistsByThisMD5URL = '/api/fss/check-any-file-exists-by-this-md5';
 
     /**
      * req 对象
@@ -121,7 +121,7 @@ class ScxFSS {
         })
     }
 
-    #defaultUploadProgressCallback = (uploadState, uploadProgress) => {
+    defaultUploadProgressCallback = (uploadState, uploadProgress) => {
         console.log({UploadState: uploadState, UploadProgress: uploadProgress});
     }
 
@@ -132,7 +132,7 @@ class ScxFSS {
      * @returns {Promise<unknown>} r
      */
 
-    fssUpload(needUploadFile, uploadProgressCallback = this.#defaultUploadProgressCallback) {
+    fssUpload(needUploadFile, uploadProgressCallback = this.defaultUploadProgressCallback) {
         return new Promise((resolve, reject) => {
             //先判断待上传的文件是否为空或者是否为 File 对象
             if (needUploadFile == null || !(needUploadFile instanceof File)) {
@@ -140,8 +140,8 @@ class ScxFSS {
                 return;
             }
             //判断文件大小是否超出最大限制
-            if (needUploadFile.size > this.#maxUploadSize) {
-                reject('文件不能大于 ' + ScxFSS.formatFileSize(this.#maxUploadSize) + '!!! 问题文件 : ' + needUploadFile.name);
+            if (needUploadFile.size > this.maxUploadSize) {
+                reject('文件不能大于 ' + ScxFSS.formatFileSize(this.maxUploadSize) + '!!! 问题文件 : ' + needUploadFile.name);
                 return;
             }
 
@@ -149,7 +149,7 @@ class ScxFSS {
             uploadProgressCallback('to-be-upload', 0);
 
             //开始获取 md5和 分块
-            ScxFSS.getChunkAndMD5(needUploadFile, uploadProgressCallback, this.#chunkSize).then(chunkAndMD5 => {
+            ScxFSS.getChunkAndMD5(needUploadFile, uploadProgressCallback, this.chunkSize).then(chunkAndMD5 => {
                 const fileName = needUploadFile.name;
                 const fileSize = needUploadFile.size;
                 const chunk = chunkAndMD5.chunk;
@@ -169,7 +169,7 @@ class ScxFSS {
                     uploadFormData.append('nowChunkIndex', i + '');
 
                     //向后台发送请求
-                    this.scxReq.post(this.#uploadURL, uploadFormData).then((data) => {
+                    this.scxReq.post(this.uploadURL, uploadFormData).then((data) => {
                         //这里因为有断点续传的功能所以可以直接设置 i 以便跳过已经上传过的区块
                         if (data.type === 'need-more') {
                             i = data.item;
@@ -186,7 +186,7 @@ class ScxFSS {
                 }
 
                 //这里先检查一下服务器是否已经有相同MD5的文件了 有的话就不传了
-                this.scxReq.post(this.#checkAnyFileExistsByThisMD5URL, {
+                this.scxReq.post(this.checkAnyFileExistsByThisMD5URL, {
                     fileName: fileName,
                     fileSize: fileSize,
                     fileMD5: md5
@@ -217,7 +217,7 @@ class ScxFSS {
      */
     getFSSObject(fssObjectIDs) {
         return new Promise((resolve, reject) => {
-            this.scxReq.post(this.#listURL, {fssObjectIDs: fssObjectIDs}).then(data => {
+            this.scxReq.post(this.listURL, {fssObjectIDs: fssObjectIDs}).then(data => {
                 //可以读取的文件
                 const canReadFileList = data.items.map(i => new FSSObject(i));
                 //此处过滤出 无法读取的文件
@@ -245,7 +245,7 @@ class ScxFSS {
      * @param fssObjectID
      */
     getRawURL(fssObjectID) {
-        return this.scxReq.scxApiHelper.joinHttpUrl(this.#rawURL) + fssObjectID
+        return this.scxReq.scxApiHelper.joinHttpUrl(this.rawURL) + fssObjectID
     };
 
     /**
@@ -253,7 +253,7 @@ class ScxFSS {
      * @param fssObjectID
      */
     getImageURL(fssObjectID) {
-        return this.scxReq.scxApiHelper.joinHttpUrl(this.#imageURL) + fssObjectID;
+        return this.scxReq.scxApiHelper.joinHttpUrl(this.imageURL) + fssObjectID;
     };
 
     /**
@@ -261,7 +261,7 @@ class ScxFSS {
      * @param fssObjectID
      */
     getDownloadURL(fssObjectID) {
-        return this.scxReq.scxApiHelper.joinHttpUrl(this.#downloadURL) + fssObjectID
+        return this.scxReq.scxApiHelper.joinHttpUrl(this.downloadURL) + fssObjectID
     };
 
 }
