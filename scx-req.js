@@ -189,7 +189,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     get(url, data = null) {
-        return this.checkPerms(ScxReq.get(this.scxApiHelper.joinHttpUrl(url), this.authHeaders(), data))
+        return this.checkPerms(ScxReq.get(this.scxApiHelper.joinHttpURL(url), this.authHeaders(), data))
     };
 
     /**
@@ -199,7 +199,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     post(url, data = null) {
-        return this.checkPerms(ScxReq.post(this.scxApiHelper.joinHttpUrl(url), this.authHeaders(), data));
+        return this.checkPerms(ScxReq.post(this.scxApiHelper.joinHttpURL(url), this.authHeaders(), data));
     };
 
     /**
@@ -209,7 +209,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     put(url, data = null) {
-        return this.checkPerms(ScxReq.put(this.scxApiHelper.joinHttpUrl(url), this.authHeaders(), data))
+        return this.checkPerms(ScxReq.put(this.scxApiHelper.joinHttpURL(url), this.authHeaders(), data))
     };
 
     /**
@@ -219,7 +219,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     delete(url, data = null) {
-        return this.checkPerms(ScxReq.delete(this.scxApiHelper.joinHttpUrl(url), this.authHeaders(), data))
+        return this.checkPerms(ScxReq.delete(this.scxApiHelper.joinHttpURL(url), this.authHeaders(), data))
     };
 }
 

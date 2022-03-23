@@ -1,5 +1,5 @@
 /**
- * BaseUrl 类
+ * ScxApiHelper 类
  */
 class ScxApiHelper {
 
@@ -47,7 +47,7 @@ class ScxApiHelper {
      * @param url
      * @returns {*}
      */
-    joinHttpUrl(url) {
+    joinHttpURL(url) {
         return ScxApiHelper.isExternal(url) ? url : this.httpURL + ScxApiHelper.cleanURL(url);
     }
 

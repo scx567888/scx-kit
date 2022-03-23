@@ -244,24 +244,24 @@ class ScxFSS {
      * 获取 raw url
      * @param fssObjectID
      */
-    getRawURL(fssObjectID) {
-        return this.scxReq.scxApiHelper.joinHttpUrl(this.rawURL) + fssObjectID
+    joinRawURL(fssObjectID) {
+        return this.scxReq.scxApiHelper.joinHttpURL(this.rawURL) + fssObjectID
     };
 
     /**
      * 获取 img url
      * @param fssObjectID
      */
-    getImageURL(fssObjectID) {
-        return this.scxReq.scxApiHelper.joinHttpUrl(this.imageURL) + fssObjectID;
+    joinImageURL(fssObjectID) {
+        return this.scxReq.scxApiHelper.joinHttpURL(this.imageURL) + fssObjectID;
     };
 
     /**
      * 获取 download url
      * @param fssObjectID
      */
-    getDownloadURL(fssObjectID) {
-        return this.scxReq.scxApiHelper.joinHttpUrl(this.downloadURL) + fssObjectID
+    joinDownloadURL(fssObjectID) {
+        return this.scxReq.scxApiHelper.joinHttpURL(this.downloadURL) + fssObjectID
     };
 
 }
