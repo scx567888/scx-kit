@@ -34,8 +34,9 @@ class ScxReq {
                 const urlSearchParams = new URLSearchParams();
                 //循环设置 body
                 for (let k in body) {
-                    if (!body.hasOwnProperty(k)) continue;
-                    urlSearchParams.set(k, body[k]);
+                    if (body.hasOwnProperty(k)) {
+                        urlSearchParams.set(k, body[k]);
+                    }
                 }
                 url = url + '?' + urlSearchParams.toString();
             } else {
@@ -43,7 +44,7 @@ class ScxReq {
                     init.body = body;
                 } else {
                     init.headers.set('Content-Type', 'application/json;charset=utf-8');
-                    init.body = JSON.stringify(body)
+                    init.body = JSON.stringify(body);
                 }
             }
         }
