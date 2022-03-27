@@ -52,8 +52,9 @@ class ScxReq {
         if (headers) {
             //循环设置 headers
             for (let k in headers) {
-                if (!headers.hasOwnProperty(k)) continue;
-                init.headers.set(k, headers[k]);
+                if (headers.hasOwnProperty(k)) {
+                    init.headers.set(k, headers[k]);
+                }
             }
         }
 
