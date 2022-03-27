@@ -1,7 +1,8 @@
 /**
- *  在 Req0 之上封装的附带权限校验的
+ *  ScxReq : 针对 fetch 的简单封装
  */
 class ScxReq {
+
     scxApiHelper;
 
     /**
@@ -21,17 +22,11 @@ class ScxReq {
      * @param method
      * @returns {Promise<unknown>}
      */
-    static baseReq(url, headers, body, method) {
+    static baseReq(url, method, body, headers) {
         //初始化 fetch 参数 , 此处携带 cookie
         const init = {
             method: method, headers: new Headers(), credentials: 'include', body: null
         };
-
-        //循环设置 headers
-        for (let k in headers) {
-            if (!headers.hasOwnProperty(k)) continue;
-            init.headers.set(k, headers[k]);
-        }
 
         //根据 body 类型设置请求头
         if (body) {
@@ -44,12 +39,20 @@ class ScxReq {
                 }
                 url = url + '?' + urlSearchParams.toString();
             } else {
-                if (Object.prototype.toString.call(body) === '[object FormData]') {
-                    init.body = body
+                if (body instanceof FormData) {
+                    init.body = body;
                 } else {
                     init.headers.set('Content-Type', 'application/json;charset=utf-8');
                     init.body = JSON.stringify(body)
                 }
+            }
+        }
+
+        if (headers) {
+            //循环设置 headers
+            for (let k in headers) {
+                if (!headers.hasOwnProperty(k)) continue;
+                init.headers.set(k, headers[k]);
             }
         }
 
@@ -80,8 +83,8 @@ class ScxReq {
      * @param body
      * @returns {Promise<unknown>}
      */
-    static get(url, headers, body) {
-        return ScxReq.baseReq(url, headers, body, "GET");
+    static get(url, body = null, headers = null,) {
+        return ScxReq.baseReq(url, "GET", body, headers);
     }
 
     /**
@@ -91,8 +94,8 @@ class ScxReq {
      * @param body
      * @returns {Promise<unknown>}
      */
-    static post(url, headers, body) {
-        return ScxReq.baseReq(url, headers, body, "POST");
+    static post(url, body = null, headers = null) {
+        return ScxReq.baseReq(url, "POST", body, headers);
     }
 
     /**
@@ -102,8 +105,8 @@ class ScxReq {
      * @param body
      * @returns {Promise<unknown>}
      */
-    static put(url, headers, body) {
-        return ScxReq.baseReq(url, headers, body, "PUT");
+    static put(url, body = null, headers = null) {
+        return ScxReq.baseReq(url, "PUT", body, headers);
     }
 
     /**
@@ -113,53 +116,16 @@ class ScxReq {
      * @param body
      * @returns {Promise<unknown>}
      */
-    static delete(url, headers, body) {
-        return ScxReq.baseReq(url, headers, body, "DELETE");
+    static delete(url, body = null, headers = null) {
+        return ScxReq.baseReq(url, "DELETE", body, headers);
     }
 
-    authHeaders = () => {
-        return {};
-    };
 
-    noPermHandler = () => console.warn('NoPerm!!!');
-
-    unauthorizedHandler = () => console.warn('Unauthorized!!!');
-
-    serverErrorHandler = () => console.warn('ServerError!!!');
-
-    unKnowErrorHandler = (data) => console.warn('UnKnowError : ' + data);
-
-    //这里将两种情况视为错误
-    //一个是由 req0 返回的错误 包括 : 网络错误 和 状态码不在 200-299 之间
-
-    setAuthHeaders(authHeaders) {
-        this.authHeaders = authHeaders;
-        return this;
-    }
-
-    setNoPermHandler(noPermHandler) {
-        this.noPermHandler = noPermHandler;
-        return this;
-    }
-
-    setUnauthorizedHandler(unauthorizedHandler) {
-        this.unauthorizedHandler = unauthorizedHandler;
-        return this;
-    }
-
-    setServerErrorHandler(serverErrorHandler) {
-        this.serverErrorHandler = serverErrorHandler;
-        return this;
-    }
-
-    setUnKnowErrorHandler(unKnowErrorHandler) {
-        this.unKnowErrorHandler = unKnowErrorHandler;
-        return this;
-    }
-
-    //另一个是根据后台 json 的格式约定 将所有 message != ok 的视为 错误
     checkPerms(p) {
         return new Promise((resolve, reject) => p.then(res => {
+            //这里将两种情况视为错误
+            //一个是由 req0 返回的错误 包括 : 网络错误 和 状态码不在 200-299 之间
+            //另一个是根据后台 json 的格式约定 将所有 message != ok 的视为 错误
             if (res.message === 'ok') {
                 resolve(res.data);
             } else {
@@ -185,44 +151,74 @@ class ScxReq {
     /**
      * GET 方法
      * @param url
-     * @param data
+     * @param body
+     * @param headers
      * @returns {Promise<unknown>}
      */
-    get(url, data = null) {
-        return this.checkPerms(ScxReq.get(this.scxApiHelper.joinHttpURL(url), this.authHeaders(), data))
-    };
+    get(url, body = null, headers = null) {
+        return this.checkPerms(ScxReq.get(this.scxApiHelper.joinHttpURL(url), body, this.mergeHeaders(headers)))
+    }
 
     /**
      * POST 方法
      * @param url
-     * @param data
+     * @param body
+     * @param headers
      * @returns {Promise<unknown>}
      */
-    post(url, data = null) {
-        return this.checkPerms(ScxReq.post(this.scxApiHelper.joinHttpURL(url), this.authHeaders(), data));
-    };
+    post(url, body = null, headers = null) {
+        return this.checkPerms(ScxReq.post(this.scxApiHelper.joinHttpURL(url), body, this.mergeHeaders(headers)));
+    }
 
     /**
      * PUT 方法
      * @param url
-     * @param data
+     * @param body
+     * @param headers
      * @returns {Promise<unknown>}
      */
-    put(url, data = null) {
-        return this.checkPerms(ScxReq.put(this.scxApiHelper.joinHttpURL(url), this.authHeaders(), data))
-    };
+    put(url, body = null, headers = null) {
+        return this.checkPerms(ScxReq.put(this.scxApiHelper.joinHttpURL(url), body, this.mergeHeaders(headers)))
+    }
 
     /**
      * DELETE 方法
      * @param url
-     * @param data
+     * @param body
+     * @param headers
      * @returns {Promise<unknown>}
      */
-    delete(url, data = null) {
-        return this.checkPerms(ScxReq.delete(this.scxApiHelper.joinHttpURL(url), this.authHeaders(), data))
-    };
+    delete(url, body = null, headers = null) {
+        return this.checkPerms(ScxReq.delete(this.scxApiHelper.joinHttpURL(url), body, this.mergeHeaders(headers)))
+    }
+
+    mergeHeaders(headers) {
+        const mergedHeaders = {};
+        Object.assign(mergedHeaders, this.authHeaders())
+        Object.assign(mergedHeaders, headers);
+        return mergedHeaders;
+    }
+
+    authHeaders() {
+        return {};
+    }
+
+    noPermHandler() {
+        console.warn('NoPerm!!!');
+    }
+
+    unauthorizedHandler() {
+        console.warn('Unauthorized!!!');
+    }
+
+    serverErrorHandler() {
+        console.warn('ServerError!!!');
+    }
+
+    unKnowErrorHandler(data) {
+        console.warn('UnKnowError : ' + data);
+    }
+
 }
 
-export {
-    ScxReq
-}
+export {ScxReq}
