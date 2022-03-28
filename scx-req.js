@@ -1,5 +1,7 @@
 const HttpHeaderValues = {
-    APPLICATION_JSON: "application/json"
+    APPLICATION_JSON: "application/json",
+    APPLICATION_XML: "application/xml",
+    MULTIPART_FORM_DATA: "multipart/form-data"
 }
 
 const HttpHeaderNames = {
@@ -8,7 +10,27 @@ const HttpHeaderNames = {
 
 class ScxReqOptions {
     method;
-    headers
+
+    headers;
+
+    /**
+     *  代表返回值是否特殊处理 为 true 则直接返回 fetch 对象
+     */
+    originalResults;
+
+    /**
+     * 想如何处理返回值 取值如下 [auto, arrayBuffer, blob, formData, json, text, jsonVO] (注意 originalResults 为 true 时此属性无效)
+     * jsonVO 是针对后台业务 JsonVo 进行特殊配置 1, 会仅将返回值中 message 字段为 ok 的作为正确请求 2, 会直接提取返回值中的 data 字段作为返回对象
+     *
+     */
+    responseType;
+
+    /**
+     * 在 fetch 中只有网络错误才会 reject
+     * 若此字段为 true  , 则将会对所有非 2xx 范围的相应拒绝
+     * 若此字段为 false , 则何 fetch 保持一致
+     */
+    rejectIfResponseNotOK;
 }
 
 /**
@@ -44,26 +66,36 @@ class ScxReq {
 
     /**
      * 基本的 req
-     * @returns {Promise<unknown>}
+     * @returns {Promise<Object>}
      * @param url
-     * @param body
+     * @param body {Object}
      * @param options {ScxReqOptions}
      */
-    static request(url, body, options = {}) {
-        const {method = "GET", headers} = options;
+    static request(url, body = {}, options = {}) {
+        const {
+            method = "GET",
+            headers,
+            originalResults = false,
+            responseType = "auto",
+            rejectIfResponseNotOK = true
+        } = options;
         //初始化 fetch 参数 , 此处携带 cookie
         const init = {
-            method: method, headers: new Headers(), credentials: 'include', body: null
+            method,
+            headers: new Headers(),
+            credentials: 'include',
+            body: null
         };
-
         //根据 body 类型设置请求头
         if (body) {
             if (init.method === 'GET') {
-                url = url + '?' + this.toURLSearchParams(body);
+                if (Object.keys(body).length > 0) {
+                    url = url + '?' + ScxReq.toURLSearchParams(body);
+                }
+            } else if (body instanceof FormData) {
+                init.body = body;
             } else {
-                if (body instanceof FormData) {
-                    init.body = body;
-                } else {
+                if (Object.keys(body).length > 0) {
                     init.headers.set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON + ';charset=utf-8');
                     init.body = JSON.stringify(body);
                 }
@@ -79,83 +111,129 @@ class ScxReq {
             }
         }
 
-        return new Promise((resolve, reject) => fetch(url, init).then(res => {
-            let contentType = res.headers.get(HttpHeaderNames.CONTENT_TYPE);
-            if (contentType != null && contentType.toLowerCase().startsWith(HttpHeaderValues.APPLICATION_JSON)) {
-                resolve(res.json());
-            } else {
-                resolve(res);
-            }
-        }).catch(error => reject(error)));
+        if (originalResults) {
+            return fetch(url, init);
+        } else {
+            //此处进行特殊处理 1, 直接返回结果 2, 将非 2xx 的状态码表示为错误
+            return new Promise((resolve, reject) => fetch(url, init).then(res => {
+                if (rejectIfResponseNotOK && !res.ok) {
+                    reject({error: res, errorType: 'responseNotOK'});
+                    return;
+                }
+                switch (responseType) {
+                    case "arrayBuffer": {
+                        resolve(res.arrayBuffer());
+                        break;
+                    }
+                    case "blob": {
+                        resolve(res.blob());
+                        break;
+                    }
+                    case "formData": {
+                        resolve(res.formData());
+                        break;
+                    }
+                    case "json": {
+                        resolve(res.json());
+                        break;
+                    }
+                    case "text": {
+                        resolve(res.text());
+                        break;
+                    }
+                    case "jsonVO": {
+                        //这里是特殊处理
+                        res.json().then(d => {
+                            if (d.message === 'ok') {
+                                resolve(d.data);
+                            } else {
+                                reject({error: d, errorType: 'jsonVO'});
+                            }
+                        }).catch(error => reject({error: error, errorType: 'fetch'}))
+                        break;
+                    }
+                    case "auto":
+                    default : {
+                        let contentType = res.headers.get(HttpHeaderNames.CONTENT_TYPE);
+                        if (contentType != null) {
+                            contentType = contentType.toLowerCase();
+                            if (contentType.startsWith(HttpHeaderValues.APPLICATION_JSON)) {
+                                resolve(res.json());
+                            } else if (contentType.startsWith("text/") || contentType.startsWith(HttpHeaderValues.APPLICATION_XML)) {
+                                resolve(res.text());
+                            } else if (contentType.startsWith(HttpHeaderValues.MULTIPART_FORM_DATA)) {
+                                resolve(res.formData());
+                            } else {
+                                resolve(res.arrayBuffer());
+                            }
+                        } else {
+                            resolve(res.arrayBuffer());
+                        }
+                    }
+                }
+            }).catch(error => reject({error, errorType: 'fetch'})));
+        }
 
     }
 
     /**
      * GET 方法
      * @param url
-     * @param body
-     * @param options
-     * @returns {Promise<unknown>}
+     * @param body {Object}
+     * @param options {ScxReqOptions}
+     * @returns {Promise<Object>}
      */
-    static get(url, body = null, options = {}) {
+    static get(url, body = {}, options = {}) {
         return ScxReq.request(url, body, {...options, method: "GET"});
     }
 
     /**
      * POST 方法
      * @param url
-     * @param body
-     * @param options
-     * @returns {Promise<unknown>}
+     * @param body {Object}
+     * @param options {ScxReqOptions}
+     * @returns {Promise<Object>}
      */
-    static post(url, body = null, options = {}) {
+    static post(url, body = {}, options = {}) {
         return ScxReq.request(url, body, {...options, method: "POST"});
     }
 
     /**
      * PUT 方法
      * @param url
-     * @param body
-     * @param options
-     * @returns {Promise<unknown>}
+     * @param body {Object}
+     * @param options {ScxReqOptions}
+     * @returns {Promise<Object>}
      */
-    static put(url, body = null, options = {}) {
+    static put(url, body = {}, options = {}) {
         return ScxReq.request(url, body, {...options, method: "PUT"});
     }
 
     /**
      * DELETE 方法
      * @param url
-     * @param body
-     * @param options
-     * @returns {Promise<unknown>}
+     * @param body {Object}
+     * @param options {ScxReqOptions}
+     * @returns {Promise<Object>}
      */
-    static delete(url, body = null, options = {}) {
+    static delete(url, body = {}, options = {}) {
         return ScxReq.request(url, body, {...options, method: "DELETE"});
     }
 
     checkPerms(p) {
-        return new Promise((resolve, reject) => p.then(res => {
-            //这里将两种情况视为错误
-            //一个是由 req0 返回的错误 包括 : 网络错误 和 状态码不在 200-299 之间
-            //另一个是根据后台 json 的格式约定 将所有 message != ok 的视为 错误
-            if (res.message === 'ok') {
-                resolve(res.data);
-            } else {
-                //这里将错误传递给调用者 由调用者自行判断处理方式
-                reject(res);
-            }
-        }).catch(error => {
-            //此处针对一些常见的 错误进行处理 例如 权限问题
-            const status = error.status;
-            if (status === 401) {
-                this.unauthorizedHandler();
-            } else if (status === 403) {
-                this.noPermHandler();
-            } else if (status === 500) {
-                this.serverErrorHandler();
-            } else {
-                this.unKnowErrorHandler(error);
+        return new Promise((resolve, reject) => p.then(v => resolve(v)).catch(error => {
+            if (error.errorType === 'responseNotOK') {
+                //此处针对一些常见的 错误进行处理 例如 权限问题
+                const status = error.error.status;
+                if (status === 401) {
+                    this.unauthorizedHandler(error);
+                } else if (status === 403) {
+                    this.noPermHandler(error);
+                } else if (status === 500) {
+                    this.serverErrorHandler(error);
+                } else {
+                    this.unKnowErrorHandler(error);
+                }
             }
             reject(error);
         }));
@@ -169,7 +247,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     get(url, body = null, options = {}) {
-        return this.checkPerms(ScxReq.get(this.scxApiHelper.joinHttpURL(url), body, this.mergeHeaders(options)));
+        return this.checkPerms(ScxReq.get(this.scxApiHelper.joinHttpURL(url), body, this.mergeOptions(options)));
     }
 
     /**
@@ -180,7 +258,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     post(url, body = null, options = {}) {
-        return this.checkPerms(ScxReq.post(this.scxApiHelper.joinHttpURL(url), body, this.mergeHeaders(options)));
+        return this.checkPerms(ScxReq.post(this.scxApiHelper.joinHttpURL(url), body, this.mergeOptions(options)));
     }
 
     /**
@@ -191,7 +269,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     put(url, body = null, options = {}) {
-        return this.checkPerms(ScxReq.put(this.scxApiHelper.joinHttpURL(url), body, this.mergeHeaders(options)));
+        return this.checkPerms(ScxReq.put(this.scxApiHelper.joinHttpURL(url), body, this.mergeOptions(options)));
     }
 
     /**
@@ -202,11 +280,11 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     delete(url, body = null, options = {}) {
-        return this.checkPerms(ScxReq.delete(this.scxApiHelper.joinHttpURL(url), body, this.mergeHeaders(options)));
+        return this.checkPerms(ScxReq.delete(this.scxApiHelper.joinHttpURL(url), body, this.mergeOptions(options)));
     }
 
-    mergeHeaders(options = {}) {
-        const finalOptions = {...options};
+    mergeOptions(options = {}) {
+        const finalOptions = {responseType: 'jsonVO', ...options};
         finalOptions.headers = {...this.authHeaders(), ...options.headers};
         return finalOptions;
     }
@@ -215,20 +293,20 @@ class ScxReq {
         return {};
     }
 
-    noPermHandler() {
+    noPermHandler(error) {
         console.warn('NoPerm!!!');
     }
 
-    unauthorizedHandler() {
+    unauthorizedHandler(error) {
         console.warn('Unauthorized!!!');
     }
 
-    serverErrorHandler() {
+    serverErrorHandler(error) {
         console.warn('ServerError!!!');
     }
 
-    unKnowErrorHandler(data) {
-        console.warn('UnKnowError : ' + data);
+    unKnowErrorHandler(error) {
+        console.warn('UnKnowError : ', error);
     }
 
 }
