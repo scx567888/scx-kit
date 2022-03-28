@@ -187,20 +187,20 @@ class ScxFSS {
 
                 //这里先检查一下服务器是否已经有相同MD5的文件了 有的话就不传了
                 this.scxReq.post(this.checkAnyFileExistsByThisMD5URL, {
-                    fileName: fileName,
-                    fileSize: fileSize,
+                    fileName,
+                    fileSize,
                     fileMD5: md5
                 }).then(data => {
                     //这里表示服务器已经有这个文件了
                     uploadProgressCallback('uploading', 100);
                     resolve(data);
-                }).catch(error => {//这里表示服务器没找到这个文件 还是老老实实的传吧
+                }).catch(e => {//这里表示服务器没找到这个文件 还是老老实实的传吧
                     //这里错误的种类比较多 也可能是网络错误或者权限错误啥的 这里判断一下先
-                    if (error.message === 'no-any-file-exists-for-this-md5') {
+                    if (e.errorType === 'jsonVO' && e.error.message === 'no-any-file-exists-for-this-md5') {
                         //开始递归上传
                         uploadNext();
                     } else {
-                        reject(error)
+                        reject(e);
                     }
                 });
 
