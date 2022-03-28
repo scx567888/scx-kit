@@ -1,3 +1,16 @@
+const HttpHeaderValues = {
+    APPLICATION_JSON: "application/json"
+}
+
+const HttpHeaderNames = {
+    CONTENT_TYPE: "content-type"
+}
+
+class ScxReqOptions {
+    method;
+    headers
+}
+
 /**
  *  ScxReq : 针对 fetch 的简单封装
  */
@@ -14,15 +27,30 @@ class ScxReq {
         this.scxApiHelper = scxApiHelper;
     }
 
+    static toURLSearchParams(body) {
+        if (body) {
+            const urlSearchParams = new URLSearchParams();
+            //循环设置 body
+            for (let k in body) {
+                if (body.hasOwnProperty(k)) {
+                    urlSearchParams.set(k, body[k]);
+                }
+            }
+            return urlSearchParams.toString();
+        } else {
+            return "";
+        }
+    }
+
     /**
      * 基本的 req
-     * @param url
-     * @param headers
-     * @param body
-     * @param method
      * @returns {Promise<unknown>}
+     * @param url
+     * @param body
+     * @param options {ScxReqOptions}
      */
-    static baseReq(url, method, body, headers) {
+    static request(url, body, options = {}) {
+        const {method = "GET", headers} = options;
         //初始化 fetch 参数 , 此处携带 cookie
         const init = {
             method: method, headers: new Headers(), credentials: 'include', body: null
@@ -31,19 +59,12 @@ class ScxReq {
         //根据 body 类型设置请求头
         if (body) {
             if (init.method === 'GET') {
-                const urlSearchParams = new URLSearchParams();
-                //循环设置 body
-                for (let k in body) {
-                    if (body.hasOwnProperty(k)) {
-                        urlSearchParams.set(k, body[k]);
-                    }
-                }
-                url = url + '?' + urlSearchParams.toString();
+                url = url + '?' + this.toURLSearchParams(body);
             } else {
                 if (body instanceof FormData) {
                     init.body = body;
                 } else {
-                    init.headers.set('Content-Type', 'application/json;charset=utf-8');
+                    init.headers.set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON + ';charset=utf-8');
                     init.body = JSON.stringify(body);
                 }
             }
@@ -59,69 +80,59 @@ class ScxReq {
         }
 
         return new Promise((resolve, reject) => fetch(url, init).then(res => {
-            //fetch 默认只把网络失败的作为 error 这里我们做进一步处理
-            //将所有状态码不在 200-299 范围内的都视为错误
-            if (res.ok) {
-                //此处有可能无法转换为 json 所以做一个处理
-                try {
-                    resolve(res.json());
-                } catch (e) {
-                    resolve(res);
-                }
+            let contentType = res.headers.get(HttpHeaderNames.CONTENT_TYPE);
+            if (contentType != null && contentType.toLowerCase().startsWith(HttpHeaderValues.APPLICATION_JSON)) {
+                resolve(res.json());
             } else {
-                reject(res);
+                resolve(res);
             }
-        }).catch(error => {
-            console.error(error);
-            reject(error);
-        }));
+        }).catch(error => reject(error)));
 
     }
 
     /**
-     * GET
+     * GET 方法
      * @param url
-     * @param headers
      * @param body
+     * @param options
      * @returns {Promise<unknown>}
      */
-    static get(url, body = null, headers = null,) {
-        return ScxReq.baseReq(url, "GET", body, headers);
+    static get(url, body = null, options = {}) {
+        return ScxReq.request(url, body, {...options, method: "GET"});
     }
 
     /**
-     * POST
+     * POST 方法
      * @param url
-     * @param headers
      * @param body
+     * @param options
      * @returns {Promise<unknown>}
      */
-    static post(url, body = null, headers = null) {
-        return ScxReq.baseReq(url, "POST", body, headers);
+    static post(url, body = null, options = {}) {
+        return ScxReq.request(url, body, {...options, method: "POST"});
     }
 
     /**
-     * PUT
+     * PUT 方法
      * @param url
-     * @param headers
      * @param body
+     * @param options
      * @returns {Promise<unknown>}
      */
-    static put(url, body = null, headers = null) {
-        return ScxReq.baseReq(url, "PUT", body, headers);
+    static put(url, body = null, options = {}) {
+        return ScxReq.request(url, body, {...options, method: "PUT"});
     }
 
     /**
-     * DELETE
+     * DELETE 方法
      * @param url
-     * @param headers
      * @param body
+     * @param options
      * @returns {Promise<unknown>}
      */
-    static delete(url, body = null, headers = null) {
-        return ScxReq.baseReq(url, "DELETE", body, headers);
+    static delete(url, body = null, options = {}) {
+        return ScxReq.request(url, body, {...options, method: "DELETE"});
     }
-
 
     checkPerms(p) {
         return new Promise((resolve, reject) => p.then(res => {
@@ -154,51 +165,50 @@ class ScxReq {
      * GET 方法
      * @param url
      * @param body
-     * @param headers
+     * @param options
      * @returns {Promise<unknown>}
      */
-    get(url, body = null, headers = null) {
-        return this.checkPerms(ScxReq.get(this.scxApiHelper.joinHttpURL(url), body, this.mergeHeaders(headers)))
+    get(url, body = null, options = {}) {
+        return this.checkPerms(ScxReq.get(this.scxApiHelper.joinHttpURL(url), body, this.mergeHeaders(options)));
     }
 
     /**
      * POST 方法
      * @param url
      * @param body
-     * @param headers
+     * @param options
      * @returns {Promise<unknown>}
      */
-    post(url, body = null, headers = null) {
-        return this.checkPerms(ScxReq.post(this.scxApiHelper.joinHttpURL(url), body, this.mergeHeaders(headers)));
+    post(url, body = null, options = {}) {
+        return this.checkPerms(ScxReq.post(this.scxApiHelper.joinHttpURL(url), body, this.mergeHeaders(options)));
     }
 
     /**
      * PUT 方法
      * @param url
      * @param body
-     * @param headers
+     * @param options
      * @returns {Promise<unknown>}
      */
-    put(url, body = null, headers = null) {
-        return this.checkPerms(ScxReq.put(this.scxApiHelper.joinHttpURL(url), body, this.mergeHeaders(headers)))
+    put(url, body = null, options = {}) {
+        return this.checkPerms(ScxReq.put(this.scxApiHelper.joinHttpURL(url), body, this.mergeHeaders(options)));
     }
 
     /**
      * DELETE 方法
      * @param url
      * @param body
-     * @param headers
+     * @param options
      * @returns {Promise<unknown>}
      */
-    delete(url, body = null, headers = null) {
-        return this.checkPerms(ScxReq.delete(this.scxApiHelper.joinHttpURL(url), body, this.mergeHeaders(headers)))
+    delete(url, body = null, options = {}) {
+        return this.checkPerms(ScxReq.delete(this.scxApiHelper.joinHttpURL(url), body, this.mergeHeaders(options)));
     }
 
-    mergeHeaders(headers) {
-        const mergedHeaders = {};
-        Object.assign(mergedHeaders, this.authHeaders())
-        Object.assign(mergedHeaders, headers);
-        return mergedHeaders;
+    mergeHeaders(options = {}) {
+        const finalOptions = {...options};
+        finalOptions.headers = {...this.authHeaders(), ...options.headers};
+        return finalOptions;
     }
 
     authHeaders() {
