@@ -88,7 +88,7 @@ class ScxReq {
     defaultOptions = {
         method: "GET",
         originalResults: false,
-        responseType: "auto",
+        responseType: "jsonVO",
         rejectIfResponseNotOK: true,
         usePreInterceptor: false,
         usePostInterceptor: false,
