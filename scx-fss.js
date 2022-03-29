@@ -1,4 +1,5 @@
 import SparkMD5 from "spark-md5";
+import {JsonVOError} from "./scx-req.js";
 
 class FSSObject {
     fssObjectID;//文件的 id
@@ -180,9 +181,7 @@ class ScxFSS {
                         } else { //这里就属于返回一些别的 类型了 我们虽然不知道是啥,但肯定不对 所以返回错误
                             reject(data)
                         }
-                    }).catch(e => {
-                        reject(e);
-                    });
+                    }).catch(e => reject(e));
                 }
 
                 //这里先检查一下服务器是否已经有相同MD5的文件了 有的话就不传了
@@ -196,7 +195,7 @@ class ScxFSS {
                     resolve(data);
                 }).catch(e => {//这里表示服务器没找到这个文件 还是老老实实的传吧
                     //这里错误的种类比较多 也可能是网络错误或者权限错误啥的 这里判断一下先
-                    if (e.errorType === 'jsonVO' && e.error.message === 'no-any-file-exists-for-this-md5') {
+                    if (e instanceof JsonVOError && e.message === 'no-any-file-exists-for-this-md5') {
                         //开始递归上传
                         uploadNext();
                     } else {
@@ -204,9 +203,7 @@ class ScxFSS {
                     }
                 });
 
-            }).catch(e => {
-                reject(e)
-            })
+            }).catch(e => reject(e))
         })
     };
 
