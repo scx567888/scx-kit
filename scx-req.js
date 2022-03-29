@@ -8,9 +8,44 @@ const HttpHeaderNames = {
     CONTENT_TYPE: "content-type"
 }
 
+class ResponseNotOKError {
+
+    cause
+
+    constructor(error) {
+        this.cause = error;
+    }
+
+}
+
+class FetchError {
+
+    cause
+
+    constructor(error) {
+        this.cause = error;
+    }
+
+}
+
+class JsonVOError {
+
+    constructor(error) {
+        Object.assign(this, error);
+    }
+
+}
+
 class ScxReqOptions {
+
+    /**
+     * 方法
+     */
     method;
 
+    /**
+     * 请求头
+     */
     headers;
 
     /**
@@ -31,12 +66,33 @@ class ScxReqOptions {
      * 若此字段为 false , 则何 fetch 保持一致
      */
     rejectIfResponseNotOK;
+
+    /**
+     * 前置处理器
+     * @type {false}
+     */
+    usePreInterceptor;
+
+    /**
+     * 后置处理器
+     * @type {false}
+     */
+    usePostInterceptor;
 }
 
 /**
  *  ScxReq : 针对 fetch 的简单封装
  */
 class ScxReq {
+
+    defaultOptions = {
+        method: "GET",
+        originalResults: false,
+        responseType: "auto",
+        rejectIfResponseNotOK: true,
+        usePreInterceptor: false,
+        usePostInterceptor: false,
+    }
 
     scxApiHelper;
 
@@ -71,13 +127,16 @@ class ScxReq {
      * @param body {Object}
      * @param options {ScxReqOptions}
      */
-    static request(url, body = {}, options = {}) {
+    req(url, body = {}, options = {}) {
+        let finalURL = this.scxApiHelper.joinHttpURL(url);
         const {
-            method = "GET",
+            method = this.defaultOptions.method,
             headers,
-            originalResults = false,
-            responseType = "auto",
-            rejectIfResponseNotOK = true
+            originalResults = this.defaultOptions.originalResults,
+            responseType = this.defaultOptions.responseType,
+            rejectIfResponseNotOK = this.defaultOptions.rejectIfResponseNotOK,
+            usePreInterceptor = this.defaultOptions.usePreInterceptor,
+            usePostInterceptor = this.defaultOptions.usePostInterceptor,
         } = options;
         //初始化 fetch 参数 , 此处携带 cookie
         const init = {
@@ -90,7 +149,7 @@ class ScxReq {
         if (body) {
             if (init.method === 'GET') {
                 if (Object.keys(body).length > 0) {
-                    url = url + '?' + ScxReq.toURLSearchParams(body);
+                    finalURL = finalURL + '?' + ScxReq.toURLSearchParams(body);
                 }
             } else if (body instanceof FormData) {
                 init.body = body;
@@ -111,13 +170,17 @@ class ScxReq {
             }
         }
 
+        const finalInit = usePreInterceptor ? this.preInterceptor(init) : init;
+
+        let result;
+
         if (originalResults) {
-            return fetch(url, init);
+            result = fetch(finalURL, finalInit);
         } else {
             //此处进行特殊处理 1, 直接返回结果 2, 将非 2xx 的状态码表示为错误
-            return new Promise((resolve, reject) => fetch(url, init).then(res => {
+            result = new Promise((resolve, reject) => fetch(finalURL, finalInit).then(res => {
                 if (rejectIfResponseNotOK && !res.ok) {
-                    reject({error: res, errorType: 'responseNotOK'});
+                    reject(new ResponseNotOKError(res));
                     return;
                 }
                 switch (responseType) {
@@ -147,9 +210,9 @@ class ScxReq {
                             if (d.message === 'ok') {
                                 resolve(d.data);
                             } else {
-                                reject({error: d, errorType: 'jsonVO'});
+                                reject(new JsonVOError(d));
                             }
-                        }).catch(error => reject({error: error, errorType: 'fetch'}))
+                        }).catch(error => reject(new FetchError(error)))
                         break;
                     }
                     case "auto":
@@ -171,72 +234,27 @@ class ScxReq {
                         }
                     }
                 }
-            }).catch(error => reject({error, errorType: 'fetch'})));
+            }).catch(error => reject(new FetchError(error))));
         }
-
+        return usePostInterceptor ? this.postInterceptor(result) : result;
     }
 
     /**
-     * GET 方法
-     * @param url
-     * @param body {Object}
-     * @param options {ScxReqOptions}
-     * @returns {Promise<Object>}
+     *
+     * @param request {RequestInit}
+     * @returns {*}
      */
-    static get(url, body = {}, options = {}) {
-        return ScxReq.request(url, body, {...options, method: "GET"});
+    preInterceptor(request) {
+        return request;
     }
 
     /**
-     * POST 方法
-     * @param url
-     * @param body {Object}
-     * @param options {ScxReqOptions}
-     * @returns {Promise<Object>}
+     *
+     * @param response {Promise<Object>}
+     * @returns {*}
      */
-    static post(url, body = {}, options = {}) {
-        return ScxReq.request(url, body, {...options, method: "POST"});
-    }
-
-    /**
-     * PUT 方法
-     * @param url
-     * @param body {Object}
-     * @param options {ScxReqOptions}
-     * @returns {Promise<Object>}
-     */
-    static put(url, body = {}, options = {}) {
-        return ScxReq.request(url, body, {...options, method: "PUT"});
-    }
-
-    /**
-     * DELETE 方法
-     * @param url
-     * @param body {Object}
-     * @param options {ScxReqOptions}
-     * @returns {Promise<Object>}
-     */
-    static delete(url, body = {}, options = {}) {
-        return ScxReq.request(url, body, {...options, method: "DELETE"});
-    }
-
-    checkPerms(p) {
-        return new Promise((resolve, reject) => p.then(v => resolve(v)).catch(error => {
-            if (error.errorType === 'responseNotOK') {
-                //此处针对一些常见的 错误进行处理 例如 权限问题
-                const status = error.error.status;
-                if (status === 401) {
-                    this.unauthorizedHandler(error);
-                } else if (status === 403) {
-                    this.noPermHandler(error);
-                } else if (status === 500) {
-                    this.serverErrorHandler(error);
-                } else {
-                    this.unKnowErrorHandler(error);
-                }
-            }
-            reject(error);
-        }));
+    postInterceptor(response) {
+        return response;
     }
 
     /**
@@ -247,7 +265,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     get(url, body = null, options = {}) {
-        return this.checkPerms(ScxReq.get(this.scxApiHelper.joinHttpURL(url), body, this.mergeOptions(options)));
+        return this.req(url, body, this.optionsProcessor("GET", options));
     }
 
     /**
@@ -258,7 +276,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     post(url, body = null, options = {}) {
-        return this.checkPerms(ScxReq.post(this.scxApiHelper.joinHttpURL(url), body, this.mergeOptions(options)));
+        return this.req(url, body, this.optionsProcessor("POST", options));
     }
 
     /**
@@ -269,7 +287,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     put(url, body = null, options = {}) {
-        return this.checkPerms(ScxReq.put(this.scxApiHelper.joinHttpURL(url), body, this.mergeOptions(options)));
+        return this.req(url, body, this.optionsProcessor("PUT", options));
     }
 
     /**
@@ -280,35 +298,19 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     delete(url, body = null, options = {}) {
-        return this.checkPerms(ScxReq.delete(this.scxApiHelper.joinHttpURL(url), body, this.mergeOptions(options)));
+        return this.req(url, body, this.optionsProcessor("DELETE", options));
     }
 
-    mergeOptions(options = {}) {
-        const finalOptions = {responseType: 'jsonVO', ...options};
-        finalOptions.headers = {...this.authHeaders(), ...options.headers};
-        return finalOptions;
-    }
-
-    authHeaders() {
-        return {};
-    }
-
-    noPermHandler(error) {
-        console.warn('NoPerm!!!');
-    }
-
-    unauthorizedHandler(error) {
-        console.warn('Unauthorized!!!');
-    }
-
-    serverErrorHandler(error) {
-        console.warn('ServerError!!!');
-    }
-
-    unKnowErrorHandler(error) {
-        console.warn('UnKnowError : ', error);
+    /**
+     *
+     * @param method
+     * @param options
+     * @returns {ScxReqOptions}
+     */
+    optionsProcessor(method, options = {}) {
+        return {...options, method};
     }
 
 }
 
-export {ScxReq}
+export {ScxReq, FetchError, JsonVOError, ResponseNotOKError}
