@@ -1,6 +1,6 @@
 {
   "name": "scx-kit",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "SCX 的配套前端工具库",
   "license": "MIT",
   "author": "scx567888",
@@ -27,12 +27,12 @@
     "spark-md5": "^3.0.2",
     "svg-mixer": "^2.3.14",
     "vue": "^3.2.31",
-    "xlsx": "^0.18.4"
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^2.2.4",
+    "@vitejs/plugin-vue": "^2.3.1",
     "clipboard": "^2.0.10",
-    "vite": "^2.8.6",
+    "vite": "^2.9.1",
     "vue-router": "^4.0.14"
   },
   "peerDependencies": {
@@ -40,6 +40,6 @@
     "spark-md5": "^3.0.2",
     "svg-mixer": "^2.3.14",
     "vue": "^3.2.31",
-    "xlsx": "^0.18.4"
+    "xlsx": "^0.18.5"
   }
 }
