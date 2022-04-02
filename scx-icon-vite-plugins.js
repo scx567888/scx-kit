@@ -1,4 +1,5 @@
-import {join, resolve} from "path";
+import {dirname, join, resolve} from "path";
+import {fileURLToPath} from "url";
 import fastGlob from "fast-glob";
 import {readFileSync} from "fs";
 import {Compiler} from 'svg-mixer'
@@ -38,6 +39,17 @@ class ScxIconInterface {
      */
     viteConfig;
 
+    /**
+     * a
+     *
+     */
+    svgCompiler = Compiler.create();
+
+    /**
+     * 缓存
+     */
+    allSymbolCache;
+
     constructor(name, svgRoots) {
         this.name = name;
         this.svgRoots = svgRoots;
@@ -56,19 +68,23 @@ class ScxIconInterface {
     load(id) {
         //默认 返回一段空的代码
         if (this.virtualModuleId === id) {
-            return `export default {}`;
+            return '';
         }
     }
 
     async getAllSymbol() {
-        const svgCompiler = Compiler.create();
+        if (!this.allSymbolCache) {
+            this.allSymbolCache = await this.createAllSymbol();
+        }
+        return this.allSymbolCache;
+    }
+
+    async createAllSymbol() {
         const svgSymbolList = [];
         for (let svgRoot of this.svgRoots) {
             const svgFilesStats = fastGlob.sync('**/*.svg', {cwd: svgRoot, onlyFiles: true});
             for (const path of svgFilesStats) {
-                const symbolContent = await svgCompiler.createSymbol({
-                    id: this.getSymbolId(path), content: this.getFileContent(svgRoot, path), path: ''
-                }).render();
+                const symbolContent = await this.svgToSymbol(this.getSymbolId(path), this.getFileContent(svgRoot, path));
                 //内容不为空 添加
                 if (symbolContent) {
                     svgSymbolList.push(symbolContent);
@@ -77,6 +93,10 @@ class ScxIconInterface {
             console.log(`scx-icon-vite-plugins : ${svgRoot} , 已处理图标 ${svgFilesStats.length} 个 !!!`);
         }
         return svgSymbolList.join('');
+    }
+
+    svgToSymbol(id, content) {
+        return this.svgCompiler.createSymbol({id, content, path: ''}).render();
     }
 
     getSymbolId(path) {
@@ -95,7 +115,7 @@ class UseHtml extends ScxIconInterface {
         super('scx-icon:use-html', svgRoots);
     }
 
-    async transformIndexHtml(html) {
+    async transformIndexHtml() {
         const allSymbol = await this.getAllSymbol();
         return [{
             tag: 'svg', attrs: {
@@ -108,6 +128,11 @@ class UseHtml extends ScxIconInterface {
 
 class UseJS extends ScxIconInterface {
 
+    /**
+     * 缓存
+     */
+    moduleJsCodeCache;
+
     constructor(svgRoots) {
         super('scx-icon:use-js', svgRoots);
     }
@@ -115,20 +140,24 @@ class UseJS extends ScxIconInterface {
     async load(id) {
         //只有 构建时才执行此方法
         if (this.viteConfig.isProduction && this.virtualModuleId === id) {
-            const allSymbol = await this.getAllSymbol();
-            return this.createModuleJsCode(allSymbol);
+            return await this.getModuleJsCode();
         }
     }
 
+    async getModuleJsCode() {
+        if (!this.moduleJsCodeCache) {
+            this.moduleJsCodeCache = this.createModuleJsCode();
+        }
+        return this.moduleJsCodeCache;
+    }
+
     configureServer(server) {
-        server.middlewares.use((req, res, next) => {
+        server.middlewares.use(async (req, res, next) => {
             //只拦截 我们需要的请求
             if (req.url.endsWith('/@id/' + this.virtualModuleId)) {
-                this.getAllSymbol().then(allSymbol => {
-                    res.setHeader('Content-Type', 'application/javascript');
-                    res.statusCode = 200;
-                    res.end(this.createModuleJsCode(allSymbol));
-                });
+                res.setHeader('Content-Type', 'application/javascript');
+                res.statusCode = 200;
+                res.end(await this.getModuleJsCode());
             } else {
                 next();
             }
@@ -139,7 +168,8 @@ class UseJS extends ScxIconInterface {
      * 获取 js 文件
      * @returns {string}
      */
-    createModuleJsCode(allSymbol) {
+    async createModuleJsCode() {
+        const allSymbol = await this.getAllSymbol();
         return `if (typeof window !== 'undefined') {
 
     function loadScxIconSvg() {
@@ -170,25 +200,23 @@ class UseJS extends ScxIconInterface {
  * @returns {{name}}
  */
 function toVitePluginObject(classInstance) {
-    const vitePluginObject = {name: classInstance.name};
-    if (classInstance.configResolved) {
-        vitePluginObject.configResolved = (resolvedConfig) => classInstance.configResolved(resolvedConfig);
-    }
-    if (classInstance.resolveId) {
-        vitePluginObject.resolveId = (id) => classInstance.resolveId(id);
-    }
+    const vitePluginObject = {
+        name: classInstance.name, load(id) {
+            return classInstance.load(id)
+        }, configResolved(resolvedConfig) {
+            return classInstance.configResolved(resolvedConfig);
+        }, resolveId(id) {
+            return classInstance.resolveId(id);
+        }
+    };
     if (classInstance.transformIndexHtml) {
         vitePluginObject.transformIndexHtml = (html) => classInstance.transformIndexHtml(html);
-    }
-    if (classInstance.load) {
-        vitePluginObject.load = (id) => classInstance.load(id);
     }
     if (classInstance.configureServer) {
         vitePluginObject.configureServer = (server) => classInstance.configureServer(server);
     }
     return vitePluginObject;
 }
-
 
 class ScxIconPluginOptions {
     type;
@@ -205,7 +233,7 @@ function scxIconPlugin(rawOptions = {}) {
         type = "js", svgRoot = []
     } = rawOptions;
 
-    const defaultSVGRoot = "./_svg-icons";
+    const defaultSVGRoot = resolve(dirname(fileURLToPath(import.meta.url)), "./_svg-icons");
 
     const svgRoots = (Array.isArray(svgRoot) ? [defaultSVGRoot, ...svgRoot] : [defaultSVGRoot, svgRoot]).map(s => resolve(s));
 
