@@ -19,20 +19,20 @@
     </a>
 </p>
 <p align="center">
-   <a target="_blank" href="https://github.com/mrmlnc/fast-glob">
-        <img src="https://img.shields.io/github/package-json/dependency-version/scx567888/scx-kit/fast-glob" alt="fast-glob"/>
+   <a target="_blank" href="https://github.com/vitejs/vite">
+        <img src="https://img.shields.io/github/package-json/dependency-version/scx567888/scx-kit/dev/vite?color=f44336" alt="Vite"/>
     </a>
     <a target="_blank" href="https://github.com/satazor/js-spark-md5">
-        <img src="https://img.shields.io/github/package-json/dependency-version/scx567888/scx-kit/spark-md5?color=brightgreen" alt="js-spark-md5"/>
+        <img src="https://img.shields.io/github/package-json/dependency-version/scx567888/scx-kit/spark-md5?color=ff8000" alt="js-spark-md5"/>
     </a>
     <a target="_blank" href="https://github.com/JetBrains/svg-mixer">
-        <img src="https://img.shields.io/github/package-json/dependency-version/scx567888/scx-kit/svg-mixer?color=6f4fab" alt="svg-mixer"/>
+        <img src="https://img.shields.io/github/package-json/dependency-version/scx567888/scx-kit/svg-mixer?color=44be16" alt="svg-mixer"/>
     </a> 
     <a target="_blank" href="https://github.com/vuejs/core">
-        <img src="https://img.shields.io/github/package-json/dependency-version/scx567888/scx-kit/vue" alt="vue"/>
+        <img src="https://img.shields.io/github/package-json/dependency-version/scx567888/scx-kit/vue?color=29aaf5" alt="vue"/>
     </a> 
     <a target="_blank" href="https://github.com/SheetJS/sheetjs">
-        <img src="https://img.shields.io/github/package-json/dependency-version/scx567888/scx-kit/xlsx?color=green" alt="SheetJS"/>
+        <img src="https://img.shields.io/github/package-json/dependency-version/scx567888/scx-kit/xlsx?color=9c27b0" alt="SheetJS"/>
     </a>
 </p>
 

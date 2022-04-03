@@ -1,6 +1,5 @@
-import {dirname, extname, join, relative, resolve} from "path";
+import {dirname, extname, join, posix, relative, resolve, win32} from "path";
 import {fileURLToPath} from "url";
-import {normalizePath} from 'vite'
 import {readdirSync, readFileSync, statSync} from "fs";
 import {Compiler} from 'svg-mixer'
 
@@ -246,6 +245,15 @@ function scxIconPlugin(rawOptions = {}) {
             throw new Error("type 类型必须是 js 或 html , type : " + type);
     }
 
+}
+
+/**
+ * 这里全部使用 '/' 而不是 window 的 '\'
+ * @param filename
+ * @returns {string}
+ */
+function normalizePath(filename) {
+    return filename.split(win32.sep).join(posix.sep);
 }
 
 function getAllSVGFiles(root) {
