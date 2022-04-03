@@ -36,9 +36,9 @@
     </a>
 </p>
 
-English | [简体中文](./README.zh-CN.md)
+简体中文 | [English](./README.md)
 
-> Some front end kits for SCX
+> 用于 SCX 的一些前端套件
 
 ## NPM
 
@@ -46,9 +46,9 @@ English | [简体中文](./README.zh-CN.md)
 npm install scx-kit
 ```
 
-## Quick start
+## 快速开始
 
-#### 1. Install the vite plugin for ScxIcon .
+#### 1. 安装用于 ScxIcon 图标的 vite 插件 。
 
 ```javascript
 import {scxIconPlugin} from 'scx-kit/scx-icon-vite-plugins.js';
@@ -56,31 +56,31 @@ import {scxIconPlugin} from 'scx-kit/scx-icon-vite-plugins.js';
 export default {
     base: './',
     plugins: [scxIconPlugin({
-        //Icon inject type, js (use js) or html (inject to the index.html)
+        //图标注入类型, js (用 js 动态注入) 或 html (直接注入到 index.html)
         type: 'js',
-        //your svg icon root, It can also be an array []
+        //您自己的svg图标文件夹 , 也可以是一个数组 []
         svgRoot: 'your-svg-root',
     })]
 }
 ```
-#### 2. Install vue component for ScxIcon .
+#### 2. 安装 ScxIcon 图标组件 。
 
 ```javascript
 import {createApp} from 'vue';
 import {ScxKitComponentInstaller} from "scx-kit/scx-kit-component-installer.js";
 import App from './App.vue';
-import 'scx-icon/register'; //if type = js you need import this virtual module
+import 'scx-icon/register'; //如果 type = js 则需要再次引入虚拟模块
 
 createApp(App)
     .use(ScxKitComponentInstaller)
     .mount('#app');
 ```
 
-#### 3. Use ScxIcon component .
+#### 3. 使用 ScxIcon 图标组件 。
 
 ```html
-<!-- You will see a smile face icon -->
+<!-- 你会看见一个笑脸图标 -->
 <scx-icon icon="outlined-face-smile"/>
 ```
 
-For more information, see [docs](https://scx.cool/docs/scx/index.html)
+有关更多信息，请参阅 [文档](https://scx.cool/docs/scx/index.html)
