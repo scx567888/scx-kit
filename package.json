@@ -1,7 +1,7 @@
 {
   "name": "scx-kit",
   "version": "1.2.3",
-  "description": "SCX 的配套前端工具库",
+  "description": "Some front end kits for SCX",
   "license": "MIT",
   "author": "scx567888",
   "files": [
