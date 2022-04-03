@@ -4,6 +4,11 @@ const ScxRouter = createRouter({
     history: createWebHashHistory(),
     routes: [
         {
+            path: '/',
+            name: 'home',
+            component: () => import('./views/home.vue'),
+        },
+        {
             path: '/scx-drag-test',
             name: 'scx-drag-test',
             component: () => import('./views/scx-drag-test.vue'),
