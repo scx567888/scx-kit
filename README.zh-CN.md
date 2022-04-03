@@ -67,7 +67,7 @@ export default {
 
 ```javascript
 import {createApp} from 'vue';
-import {ScxKitComponentInstaller} from "scx-kit/scx-kit-component-installer.js";
+import {ScxKitComponentInstaller} from 'scx-kit/scx-kit-component-installer.js';
 import App from './App.vue';
 import 'scx-icon/register'; //如果 type = js 则需要再次引入虚拟模块
 
