@@ -83,8 +83,8 @@ class ScxIconInterface {
         const svgSymbolList = [];
         for (let svgRoot of this.svgRoots) {
             const allSVGFiles = getAllSVGFiles(svgRoot);
-            for (const path of allSVGFiles) {
-                const symbolContent = await this.svgToSymbol(this.getSymbolId(path), this.getFileContent(svgRoot, path));
+            for (const {relativePath, absolutePath} of allSVGFiles) {
+                const symbolContent = await this.svgToSymbol(this.getSymbolId(relativePath), this.getFileContent(absolutePath));
                 //内容不为空 添加
                 if (symbolContent) {
                     svgSymbolList.push(symbolContent);
@@ -99,12 +99,12 @@ class ScxIconInterface {
         return this.svgCompiler.createSymbol({id, content, path: ''}).render();
     }
 
-    getSymbolId(path) {
-        return this.svgSymbolIdPrefix + path.substring(0, path.length - 4).split("/").filter(s => s).join("-");
+    getSymbolId(relativePath) {
+        return this.svgSymbolIdPrefix + relativePath.substring(0, relativePath.length - 4).split("/").filter(s => s).join("-");
     }
 
-    getFileContent(svgRoot, path) {
-        return readFileSync(join(svgRoot, path), 'utf-8')
+    getFileContent(absolutePath) {
+        return readFileSync(absolutePath, 'utf-8')
     }
 
 }
@@ -250,16 +250,18 @@ function scxIconPlugin(rawOptions = {}) {
 
 function getAllSVGFiles(root) {
     const svgFiles = [];
-    walkTree(root, (path) => {
-        let ext = extname(path);
-        if (ext && ext.toLowerCase() === '.svg') {
-            svgFiles.push(normalizePath(relative(root, path)));
+    walkTree(root, f => {
+        if (!f.isDirectory) {
+            let ext = extname(f.relativePath);
+            if (ext && ext.toLowerCase() === '.svg') {
+                svgFiles.push(f);
+            }
         }
     });
     return svgFiles;
 }
 
-function walkTree(root, callback) {
+function walkTree(root, callback, topRoot = root) {
     let items = [];
     try {
         items = readdirSync(root);
@@ -275,9 +277,13 @@ function walkTree(root, callback) {
             //忽略读取失败的文件
         }
         if (stats) {
-            callback(itemPath);
+            callback({
+                absolutePath: normalizePath(itemPath),
+                relativePath: normalizePath(relative(topRoot, itemPath)),
+                isDirectory: stats.isDirectory()
+            });
             if (stats.isDirectory()) {
-                walkTree(itemPath, callback);
+                walkTree(itemPath, callback, topRoot);
             }
         }
     }

@@ -1,4 +1,5 @@
 <template>
+  <router-link style="margin-right: 5px" to="/">Home</router-link>
   <router-link style="margin-right: 5px" to="/scx-contextmenu-test">右键菜单测试</router-link>
   <router-link style="margin-right: 5px" to="/scx-drag-test">拖动测试</router-link>
   <router-link style="margin-right: 5px" to="/scx-eventbus-test">事件总线测试</router-link>
