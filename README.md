@@ -67,7 +67,7 @@ export default {
 
 ```javascript
 import {createApp} from 'vue';
-import {ScxKitComponentInstaller} from "scx-kit/scx-kit-component-installer.js";
+import {ScxKitComponentInstaller} from 'scx-kit/scx-kit-component-installer.js';
 import App from './App.vue';
 import 'scx-icon/register'; //if type = js you need import this virtual module
 
