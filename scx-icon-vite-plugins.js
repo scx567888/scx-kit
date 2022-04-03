@@ -1,7 +1,7 @@
-import {dirname, join, resolve} from "path";
+import {dirname, extname, join, relative, resolve} from "path";
 import {fileURLToPath} from "url";
-import fastGlob from "fast-glob";
-import {readFileSync} from "fs";
+import {normalizePath} from 'vite'
+import {readdirSync, readFileSync, statSync} from "fs";
 import {Compiler} from 'svg-mixer'
 
 class ScxIconInterface {
@@ -82,15 +82,15 @@ class ScxIconInterface {
     async createAllSymbol() {
         const svgSymbolList = [];
         for (let svgRoot of this.svgRoots) {
-            const svgFilesStats = fastGlob.sync('**/*.svg', {cwd: svgRoot, onlyFiles: true});
-            for (const path of svgFilesStats) {
+            const allSVGFiles = getAllSVGFiles(svgRoot);
+            for (const path of allSVGFiles) {
                 const symbolContent = await this.svgToSymbol(this.getSymbolId(path), this.getFileContent(svgRoot, path));
                 //内容不为空 添加
                 if (symbolContent) {
                     svgSymbolList.push(symbolContent);
                 }
             }
-            console.log(`scx-icon-vite-plugins : ${svgRoot} , 已处理图标 ${svgFilesStats.length} 个 !!!`);
+            console.log(`scx-icon-vite-plugins : ${svgRoot} , 已处理图标 ${allSVGFiles.length} 个 !!!`);
         }
         return svgSymbolList.join('');
     }
@@ -197,7 +197,7 @@ class UseJS extends ScxIconInterface {
 /**
  * 直接由 class 创建的实例 vite 插件不能正确处理 需要转换为 普通对象
  * @param classInstance
- * @returns {{name}}
+ * @returns Object
  */
 function toVitePluginObject(classInstance) {
     const vitePluginObject = {
@@ -226,7 +226,7 @@ class ScxIconPluginOptions {
 /**
  *
  * @param rawOptions {ScxIconPluginOptions}
- * @returns a
+ * @returns Object
  */
 function scxIconPlugin(rawOptions = {}) {
     const {
@@ -239,13 +239,48 @@ function scxIconPlugin(rawOptions = {}) {
 
     switch (type) {
         case 'js':
-            return toVitePluginObject(new UseJS(svgRoots))
+            return toVitePluginObject(new UseJS(svgRoots));
         case 'html':
             return toVitePluginObject(new UseHtml(svgRoots));
         default:
             throw new Error("type 类型必须是 js 或 html , type : " + type);
     }
 
+}
+
+function getAllSVGFiles(root) {
+    const svgFiles = [];
+    walkTree(root, (path) => {
+        let ext = extname(path);
+        if (ext && ext.toLowerCase() === '.svg') {
+            svgFiles.push(normalizePath(relative(root, path)));
+        }
+    });
+    return svgFiles;
+}
+
+function walkTree(root, callback) {
+    let items = [];
+    try {
+        items = readdirSync(root);
+    } catch (e) {
+        //忽略读取失败的目录
+    }
+    for (const item of items) {
+        let itemPath = join(root, item);
+        let stats = null;
+        try {
+            stats = statSync(itemPath);
+        } catch (e) {
+            //忽略读取失败的文件
+        }
+        if (stats) {
+            callback(itemPath);
+            if (stats.isDirectory()) {
+                walkTree(itemPath, callback);
+            }
+        }
+    }
 }
 
 export {scxIconPlugin};

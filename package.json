@@ -23,7 +23,6 @@
     "serve": "vite preview test"
   },
   "dependencies": {
-    "fast-glob": "^3.2.11",
     "spark-md5": "^3.0.2",
     "svg-mixer": "^2.3.14",
     "vue": "^3.2.31",
@@ -36,7 +35,6 @@
     "vue-router": "^4.0.14"
   },
   "peerDependencies": {
-    "fast-glob": "^3.2.11",
     "spark-md5": "^3.0.2",
     "svg-mixer": "^2.3.14",
     "vue": "^3.2.31",
