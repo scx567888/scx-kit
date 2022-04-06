@@ -40,6 +40,10 @@ export default {
     joinImageURL: {
       type: Function,
       default: null
+    },
+    beforeUpload: {
+      type: Function,
+      default: null
     }
   },
   setup(props, ctx) {
@@ -77,6 +81,12 @@ export default {
 
     //上传文件
     function callUploadHandler(needUploadFile) {
+      if (props.beforeUpload) {
+        const result = props.beforeUpload(needUploadFile);
+        if (!result) {
+          return;
+        }
+      }
       if (props.uploadHandler) {
         props.uploadHandler(needUploadFile)
       } else {
