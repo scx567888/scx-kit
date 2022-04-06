@@ -37,7 +37,7 @@ export default {
       type: Function,
       default: null
     },
-    joinImageURL: {
+    joinImageUrl: {
       type: Function,
       default: null
     },
@@ -72,8 +72,8 @@ export default {
 
     //拼接 image URL
     function callJoinImageURL(imgUrl) {
-      if (props.joinImageURL) {
-        return props.joinImageURL(imgUrl);
+      if (props.joinImageUrl) {
+        return props.joinImageUrl(imgUrl);
       } else {
         return scxFSS.joinImageURL(imgUrl, {w: 150, h: 150});//这里添加压缩参数
       }
