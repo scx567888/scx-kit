@@ -261,7 +261,7 @@ class ScxReq {
      * GET 方法
      * @param url
      * @param body
-     * @param options
+     * @param options {ScxReqOptions}
      * @returns {Promise<unknown>}
      */
     get(url, body = null, options = {}) {
@@ -272,7 +272,7 @@ class ScxReq {
      * POST 方法
      * @param url
      * @param body
-     * @param options
+     * @param options {ScxReqOptions}
      * @returns {Promise<unknown>}
      */
     post(url, body = null, options = {}) {
@@ -283,7 +283,7 @@ class ScxReq {
      * PUT 方法
      * @param url
      * @param body
-     * @param options
+     * @param options {ScxReqOptions}
      * @returns {Promise<unknown>}
      */
     put(url, body = null, options = {}) {
@@ -294,7 +294,7 @@ class ScxReq {
      * DELETE 方法
      * @param url
      * @param body
-     * @param options
+     * @param options {ScxReqOptions}
      * @returns {Promise<unknown>}
      */
     delete(url, body = null, options = {}) {
@@ -304,7 +304,7 @@ class ScxReq {
     /**
      *
      * @param method
-     * @param options
+     * @param  options {ScxReqOptions}
      * @returns {ScxReqOptions}
      */
     optionsProcessor(method, options = {}) {

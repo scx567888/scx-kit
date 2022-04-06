@@ -248,9 +248,25 @@ class ScxFSS {
     /**
      * 获取 img url
      * @param fssObjectID
+     * @param options {JoinImageURLOptions}
      */
-    joinImageURL(fssObjectID) {
-        return this.scxReq.scxApiHelper.joinHttpURL(this.imageURL) + fssObjectID;
+    joinImageURL(fssObjectID, options = {}) {
+        const {w, h, t, width = w, height = h, type = t} = options;
+        let queryStr = "";
+        if (width || height || type) {
+            const urlSearchParams = new URLSearchParams();
+            if (width) {
+                urlSearchParams.set('w', width);
+            }
+            if (height) {
+                urlSearchParams.set('h', height);
+            }
+            if (type) {
+                urlSearchParams.set('t', type);
+            }
+            queryStr = "?" + urlSearchParams.toString();
+        }
+        return this.scxReq.scxApiHelper.joinHttpURL(this.imageURL) + fssObjectID + queryStr;
     };
 
     /**
@@ -261,6 +277,45 @@ class ScxFSS {
         return this.scxReq.scxApiHelper.joinHttpURL(this.downloadURL) + fssObjectID
     };
 
+}
+
+class JoinImageURLOptions {
+
+    /**
+     * width 的简写形式
+     * @type {Number}
+     */
+    w;
+
+    /**
+     * height 的简写形式
+     * @type {Number}
+     */
+    h;
+
+    /**
+     * type 的简写形式
+     * @type {String}
+     */
+    t;
+
+    /**
+     * 优先级大于 w
+     * @type {Number}
+     */
+    width;
+
+    /**
+     * 优先级大于 h
+     * @type {Number}
+     */
+    height;
+
+    /**
+     * 优先级大于 t
+     * @type {String}
+     */
+    type;
 }
 
 export {

@@ -63,6 +63,7 @@ export default {
     })]
 }
 ```
+
 #### 2. 安装 ScxIcon 图标组件 。
 
 ```javascript
