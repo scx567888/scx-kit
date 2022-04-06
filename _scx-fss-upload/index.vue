@@ -35,7 +35,7 @@ export default {
     },
     uploadHandler: {
       type: Function,
-      default: null //优先级大于  uploadHandlerType 指定的
+      default: null
     },
     joinImageURL: {
       type: Function,
