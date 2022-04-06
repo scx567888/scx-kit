@@ -1,6 +1,8 @@
 <template>
-  <div class="scx-fss-upload" @click="callSelectFile">
-    <input ref="hiddenInput" placeholder="file" style="display: none" type="file" @change="callUploadHandler"/>
+  <div class="scx-fss-upload" :class="dragover ?'dragover ':''" @click="callSelectFile" @drop="callDrop"
+       @dragover="callDragover" @dragleave="callDragleave">
+    <!-- 隐藏的 input 用于触发点击上传事件 -->
+    <input ref="hiddenInput" placeholder="file" style="display: none" type="file" @change="onHiddenInputChange"/>
     <!-- 有文件时显示的图片 -->
     <img v-if="imgFile" :src="callJoinImageURL(imgFile)" alt="img" class="preview-image">
     <!-- 删除按钮 -->
@@ -51,6 +53,9 @@ export default {
     //进度条参数
     const uploadProgress = reactive({visible: false, value: 70});
 
+    //拖拽状态
+    const dragover = ref(false);
+
     // 文件
     const imgFile = computed({
       get() {
@@ -71,10 +76,7 @@ export default {
     }
 
     //上传文件
-    function callUploadHandler(e) {
-      const needUploadFile = e.target.files[0];
-      //重置上传文件对象
-      resetHiddenInputValue();
+    function callUploadHandler(needUploadFile) {
       if (props.uploadHandler) {
         props.uploadHandler(needUploadFile)
       } else {
@@ -121,12 +123,40 @@ export default {
       hiddenInput.value.value = null;
     }
 
+    function callDrop(e) {
+      e.preventDefault();
+      dragover.value = false;
+      const needUploadFile = e.dataTransfer.files[0];
+      callUploadHandler(needUploadFile);
+    }
+
+    function callDragover(e) {
+      e.preventDefault();
+      dragover.value = true;
+    }
+
+    function callDragleave(e) {
+      e.preventDefault();
+      dragover.value = false;
+    }
+
+    function onHiddenInputChange(e) {
+      const needUploadFile = e.target.files[0];
+      //重置上传文件对象
+      resetHiddenInputValue();
+      callUploadHandler(needUploadFile);
+    }
+
     return {
       hiddenInput,
+      dragover,
       imgFile,
       uploadProgress,
+      callDragleave,
+      callDrop,
+      callDragover,
       callJoinImageURL,
-      callUploadHandler,
+      onHiddenInputChange,
       callSelectFile,
       deleteImgFile
     }

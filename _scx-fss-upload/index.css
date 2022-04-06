@@ -6,10 +6,15 @@
     overflow: hidden;
     width: 150px;
     height: 150px;
-    transition: 200ms ease-in-out border;
+    transition: 200ms all;
 }
 
 .scx-fss-upload:hover {
+    border-color: #409EFF;
+}
+
+.scx-fss-upload.dragover {
+    background-color: rgba(24, 144, 255, 0.1);
     border-color: #409EFF;
 }
 
@@ -17,6 +22,7 @@
 .scx-fss-upload > .preview-image {
     height: 100%;
     width: 100%;
+    pointer-events: none;
 }
 
 .scx-fss-upload > .no-preview-image {
