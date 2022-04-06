@@ -63,6 +63,7 @@ export default {
     })]
 }
 ```
+
 #### 2. Install vue component for ScxIcon .
 
 ```javascript
