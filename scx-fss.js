@@ -62,11 +62,11 @@ class ScxFSS {
     /**
      * 获取 分块和 MD5
      * @param needUploadFile
-     * @param uploadProgressCallback
+     * @param onProgress
      * @param chunkSize
      * @returns {Promise<unknown>}
      */
-    static getChunkAndMD5(needUploadFile, uploadProgressCallback, chunkSize) {
+    static getChunkAndMD5(needUploadFile, onProgress, chunkSize) {
         return new Promise((resolve, reject) => {
             //创建一个对象先
             const chunkAndMD5 = {
@@ -85,7 +85,7 @@ class ScxFSS {
             //设置加载文件回调
             fileReader.onload = (e) => {
                 //设置计算MD5的进度
-                uploadProgressCallback('checking-md5', Math.round(currentChunk / chunks * 10000) / 100.00)
+                onProgress('checking-md5', Math.round(currentChunk / chunks * 10000) / 100.00);
                 //读取
                 spark.append(e.target.result);
                 currentChunk = currentChunk + 1;
@@ -95,7 +95,7 @@ class ScxFSS {
                 } else { //读完了 赋值MD5 并返回
                     chunkAndMD5.md5 = spark.end(false);
                     //设置校验 md5 为 100%
-                    uploadProgressCallback('checking-md5', 100);
+                    onProgress('checking-md5', 100);
                     resolve(chunkAndMD5);
                 }
             };
@@ -122,35 +122,35 @@ class ScxFSS {
         })
     }
 
-    defaultUploadProgressCallback = (uploadState, uploadProgress) => {
+    defaultOnProgress = (uploadState, uploadProgress) => {
         console.log({UploadState: uploadState, UploadProgress: uploadProgress});
     }
 
     /**
      * 上传到 fss 中
      * @param needUploadFile 待上传的文件
-     * @param uploadProgressCallback 上传进度回调
+     * @param onProgress 上传进度回调
      * @returns {Promise<unknown>} r
      */
 
-    fssUpload(needUploadFile, uploadProgressCallback = this.defaultUploadProgressCallback) {
+    fssUpload(needUploadFile, onProgress = this.defaultOnProgress) {
         return new Promise((resolve, reject) => {
             //先判断待上传的文件是否为空或者是否为 File 对象
             if (needUploadFile == null || !(needUploadFile instanceof File)) {
-                reject('文件不能为空并且类型必须为文件!!!');
+                reject('文件不能为空并且类型必须为文件 !!!');
                 return;
             }
             //判断文件大小是否超出最大限制
             if (needUploadFile.size > this.maxUploadSize) {
-                reject('文件不能大于 ' + ScxFSS.formatFileSize(this.maxUploadSize) + '!!! 问题文件 : ' + needUploadFile.name);
+                reject('文件不能大于 ' + ScxFSS.formatFileSize(this.maxUploadSize) + ' !!! 问题文件 : ' + needUploadFile.name);
                 return;
             }
 
             //先将上传的回调设置为 待上传
-            uploadProgressCallback('to-be-upload', 0);
+            onProgress('to-be-upload', 0);
 
             //开始获取 md5和 分块
-            ScxFSS.getChunkAndMD5(needUploadFile, uploadProgressCallback, this.chunkSize).then(chunkAndMD5 => {
+            ScxFSS.getChunkAndMD5(needUploadFile, onProgress, this.chunkSize).then(chunkAndMD5 => {
                 const fileName = needUploadFile.name;
                 const fileSize = needUploadFile.size;
                 const chunk = chunkAndMD5.chunk;
@@ -160,7 +160,7 @@ class ScxFSS {
                 //创建上传方法
                 const uploadNext = () => {
                     //设置进度条 此处由已上传区块数量和全部区块数量计算而得
-                    uploadProgressCallback('uploading', Math.round(i / chunkAndMD5.chunk.length * 10000) / 100.00);
+                    onProgress('uploading', Math.round(i / chunkAndMD5.chunk.length * 10000) / 100.00);
                     const uploadFormData = new FormData();
                     uploadFormData.append('fileName', fileName);
                     uploadFormData.append('fileData', chunk[i]);
@@ -170,16 +170,16 @@ class ScxFSS {
                     uploadFormData.append('nowChunkIndex', i + '');
 
                     //向后台发送请求
-                    this.scxReq.post(this.uploadURL, uploadFormData).then((data) => {
+                    this.scxReq.post(this.uploadURL, uploadFormData).then(data => {
                         //这里因为有断点续传的功能所以可以直接设置 i 以便跳过已经上传过的区块
                         if (data.type === 'need-more') {
                             i = data.item;
                             uploadNext();
                         } else if (data.type === 'upload-success') {
-                            uploadProgressCallback('uploading', 100)
+                            onProgress('uploading', 100);
                             resolve(data);
                         } else { //这里就属于返回一些别的 类型了 我们虽然不知道是啥,但肯定不对 所以返回错误
-                            reject(data)
+                            reject(data);
                         }
                     }).catch(e => reject(e));
                 }
@@ -191,7 +191,7 @@ class ScxFSS {
                     fileMD5: md5
                 }).then(data => {
                     //这里表示服务器已经有这个文件了
-                    uploadProgressCallback('uploading', 100);
+                    onProgress('uploading', 100);
                     resolve(data);
                 }).catch(e => {//这里表示服务器没找到这个文件 还是老老实实的传吧
                     //这里错误的种类比较多 也可能是网络错误或者权限错误啥的 这里判断一下先
@@ -319,5 +319,7 @@ class JoinImageURLOptions {
 }
 
 export {
-    ScxFSS
+    ScxFSS,
+    JoinImageURLOptions,
+    FSSObject
 }
