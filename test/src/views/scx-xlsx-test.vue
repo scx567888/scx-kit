@@ -1,5 +1,7 @@
 <template>
-  <button @click="exportXLSX()">点击导出</button>
+  <div>
+    <button @click="exportXLSX()">点击导出</button>
+  </div>
 </template>
 
 <script>

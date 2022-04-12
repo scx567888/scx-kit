@@ -9,6 +9,7 @@
   <router-link style="margin-right: 5px" to="/scx-group-test">ScxGroup测试</router-link>
   <router-link style="margin-right: 5px" to="/listToTree-test">ListToTree测试</router-link>
   <router-link style="margin-right: 5px" to="/scx-fss-test">ScxFSS 测试</router-link>
+  <router-link style="margin-right: 5px" to="/scx-tinymce-test">ScxTinymce 测试</router-link>
   <router-view/>
 </template>
 
