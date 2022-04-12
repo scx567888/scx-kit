@@ -52,6 +52,11 @@ const ScxRouter = createRouter({
             name: 'scx-fss-test',
             component: () => import('./views/scx-fss-test.vue'),
         },
+        {
+            path: '/scx-tinymce-test',
+            name: 'scx-tinymce-test',
+            component: () => import('./views/scx-tinymce-test.vue'),
+        },
     ]
 });
 

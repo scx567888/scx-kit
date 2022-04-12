@@ -2,6 +2,9 @@ import SparkMD5 from "spark-md5";
 import {JsonVOError} from "./scx-req.js";
 import {percentage} from "./vanilla-percentage.js";
 
+const CHECKING_MD5 = 'checking-md5';
+const UPLOADING = 'uploading';
+
 class FSSObject {
     fssObjectID;//文件的 id
     fileName;//文件的名称
@@ -33,8 +36,6 @@ class ScxFSS {
     imageURL = '/api/fss/image/';//image 的 url
     downloadURL = '/api/fss/download/'; //download 的 url
     checkAnyFileExistsByThisMD5URL = '/api/fss/check-any-file-exists-by-this-md5';
-    CHECKING_MD5 = 'checking-md5';
-    UPLOADING = 'uploading';
 
     /**
      * req 对象
@@ -320,5 +321,7 @@ class JoinImageURLOptions {
 export {
     ScxFSS,
     JoinImageURLOptions,
-    FSSObject
+    FSSObject,
+    CHECKING_MD5,
+    UPLOADING
 }
