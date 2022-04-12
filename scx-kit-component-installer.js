@@ -1,7 +1,15 @@
-import {ScxContextMenuDirective, ScxCrud, ScxDragDirective, ScxFSSUpload, ScxGroup, ScxIcon} from './scx-kit.js';
+import {
+    ScxContextMenuDirective,
+    ScxCrud,
+    ScxDragDirective,
+    ScxFSSUpload,
+    ScxGroup,
+    ScxIcon,
+    ScxTinymce
+} from './scx-kit.js';
 
 //以下为组件
-const components = [ScxIcon, ScxCrud, ScxGroup, ScxFSSUpload];
+const components = [ScxIcon, ScxCrud, ScxGroup, ScxFSSUpload, ScxTinymce];
 
 //以下为指令
 const directives = [ScxContextMenuDirective, ScxDragDirective];
