@@ -1,10 +1,11 @@
 <template>
   <scx-fss-upload v-model="nowFile" :before-upload="b"/>
-  {{ nowFile }}
+  <input v-model="nowFile">
 </template>
 
 <script setup>
 import {ref} from "vue";
+import ScxFssUpload from "../../../_scx-fss-upload/index.vue";
 
 const nowFile = ref('');
 
