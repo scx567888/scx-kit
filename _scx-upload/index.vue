@@ -1,5 +1,5 @@
 <template>
-  <div class="scx-fss-upload">
+  <div class="scx-upload">
 
     <!-- 隐藏的 input 用于触发点击上传事件 -->
     <input ref="hiddenInput" placeholder="file" style="display: none" type="file" @change="onHiddenInputChange"/>
@@ -47,7 +47,7 @@ import {CHECKING_MD5, UPLOADING} from "../scx-fss.js";
 import {download} from "../vanilla-download.js";
 
 export default {
-  name: "scx-fss-upload",
+  name: "scx-upload",
   components: {
     ScxIcon
   },
