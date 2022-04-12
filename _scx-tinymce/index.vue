@@ -61,23 +61,27 @@ export default {
 
     const textareaRef = ref(null);
 
-    const fss = inject("scx-fss", null);
+    /**
+     *
+     * @type {ScxFSS}
+     */
+    const scxFSS = inject("scx-fss", null);
 
     let nowEditor = null;
 
     // scx fss 文件上传
     function scx_fss_image_upload_handler(blobInfo, progress) {
       const needUploadFile = new File([blobInfo.blob()], blobInfo.filename());
-      return new Promise((resolve, reject) => fss.fssUpload(needUploadFile, (type, v) => {
+      return new Promise((resolve, reject) => scxFSS.upload(needUploadFile, (state, value) => {
         //这里为了使计算 md5 和 上传各占一半的进度所以这里做一点特殊的计算
-        if (type === CHECKING_MD5) {
-          progress(v / 2);
-        } else if (type === UPLOADING) {
-          progress(50 + v / 2);
+        if (state === CHECKING_MD5) {
+          progress(value / 2);
+        } else if (state === UPLOADING) {
+          progress(50 + value / 2);
         }
       }).then(c => {
         progress(100);
-        resolve(fss.joinImageURL(c.item.fssObjectID));
+        resolve(scxFSS.joinImageURL(c.item.fssObjectID));
       }).catch(e => {
         reject(e);
       }));

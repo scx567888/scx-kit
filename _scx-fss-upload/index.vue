@@ -73,7 +73,11 @@ export default {
 
     const hiddenInput = ref(null);// 隐藏 input 的上传 id
 
-    const scxFSS = inject("scx-fss", null); // 注入的 scx-fss
+    /**
+     * 注入的 scx-fss
+     * @type {ScxFSS}
+     */
+    const scxFSS = inject("scx-fss", null);
 
     const uploadProgress = reactive({visible: false, value: 70}); // 进度条参数
 
@@ -90,11 +94,11 @@ export default {
 
     //默认的 scx-fss 的上传 handler
     const scxFSSUploadHandler = (needUploadFile, progress) => new Promise((resolve, reject) => {
-      scxFSS.fssUpload(needUploadFile, (type, v) => {
-        if (type === CHECKING_MD5) {
-          progress(v / 2);
-        } else if (type === UPLOADING) {
-          progress(50 + v / 2);
+      scxFSS.upload(needUploadFile, (state, value) => {
+        if (state === CHECKING_MD5) {
+          progress(value / 2);
+        } else if (state === UPLOADING) {
+          progress(50 + value / 2);
         }
       }).then(d => resolve(d.item.fssObjectID)).catch(e => reject(e));
     });
@@ -102,15 +106,19 @@ export default {
     //默认的 scx-fss 的 fileInfoHandler
     const scxFSSFileInfoHandler = (fileID, onUpdate, onError) => {
       if (!fileID) {
-        onUpdate({previewUrl: null, fileName: null, downloadUrl: null});
+        onUpdate({previewUrl: null, downloadUrl: null, fileName: null});
         return;
       }
       const previewUrl = scxFSS.joinImageURL(fileID, {w: 150, h: 150});
       const downloadUrl = scxFSS.joinDownloadURL(fileID);
       onUpdate({previewUrl, downloadUrl});
-      scxFSS.getFSSObject([fileID]).then(d => {
+      scxFSS.info(fileID).then(d => {
         const item = d[0];
-        onUpdate({previewUrl, downloadUrl, fileName: item.fileName,})
+        if (item) {
+          onUpdate({previewUrl, downloadUrl, fileName: d.fileName});
+        } else {
+          onUpdate({previewUrl: null, downloadUrl: null, fileName: '文件无法读取 !!! id : ' + fileID});
+        }
       }).catch(c => {
         onError(c)
       });
@@ -173,7 +181,7 @@ export default {
     }
 
     //我们根据 proxyModelValue 实时更新 fileInfo
-    watch(proxyModelValue, (newVal) => callFileInfoHandler(newVal));
+    watch(proxyModelValue, (newVal) => callFileInfoHandler(newVal), {immediate: true});
 
     //拖拽状态
     const dragover = ref(false);

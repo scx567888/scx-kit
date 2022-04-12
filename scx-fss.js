@@ -89,7 +89,7 @@ class ScxFSS {
             //设置加载文件回调
             fileReader.onload = (e) => {
                 //设置计算MD5的进度
-                onProgress(this.CHECKING_MD5, percentage(currentChunk, chunks));
+                onProgress(CHECKING_MD5, percentage(currentChunk, chunks));
                 //读取
                 spark.append(e.target.result);
                 currentChunk = currentChunk + 1;
@@ -99,7 +99,7 @@ class ScxFSS {
                 } else { //读完了 赋值MD5 并返回
                     chunkAndMD5.md5 = spark.end(false);
                     //设置校验 md5 为 100%
-                    onProgress(this.CHECKING_MD5, 100);
+                    onProgress(CHECKING_MD5, 100);
                     resolve(chunkAndMD5);
                 }
             };
@@ -126,8 +126,8 @@ class ScxFSS {
         })
     }
 
-    defaultOnProgress = (uploadState, uploadProgress) => {
-        console.log({UploadState: uploadState, UploadProgress: uploadProgress});
+    static defaultOnProgress(state, value) {
+        console.log({state: state, value: value});
     }
 
     /**
@@ -137,7 +137,7 @@ class ScxFSS {
      * @returns {Promise<unknown>} r
      */
 
-    fssUpload(file, onProgress = this.defaultOnProgress) {
+    upload(file, onProgress = ScxFSS.defaultOnProgress) {
         return new Promise((resolve, reject) => {
             //先判断待上传的文件是否为空或者是否为 File 对象
             if (file == null || !(file instanceof File)) {
@@ -160,7 +160,7 @@ class ScxFSS {
                 //创建上传方法
                 const uploadNext = () => {
                     //设置进度条 此处由已上传区块数量和全部区块数量计算而得
-                    onProgress(this.UPLOADING, percentage(i, chunk.length));
+                    onProgress(UPLOADING, percentage(i, chunk.length));
                     const uploadFormData = new FormData();
                     uploadFormData.append('fileName', fileName);
                     uploadFormData.append('fileData', chunk[i]);
@@ -176,7 +176,7 @@ class ScxFSS {
                             i = data.item;
                             uploadNext();
                         } else if (data.type === 'upload-success') {
-                            onProgress(this.UPLOADING, 100);
+                            onProgress(UPLOADING, 100);
                             resolve(data);
                         } else { //这里就属于返回一些别的 类型了 我们虽然不知道是啥,但肯定不对 所以返回错误
                             reject(data);
@@ -191,7 +191,7 @@ class ScxFSS {
                     fileMD5: md5
                 }).then(data => {
                     //这里表示服务器已经有这个文件了
-                    onProgress(this.UPLOADING, 100);
+                    onProgress(UPLOADING, 100);
                     resolve(data);
                 }).catch(e => {//这里表示服务器没找到这个文件 还是老老实实的传吧
                     //这里错误的种类比较多 也可能是网络错误或者权限错误啥的 这里判断一下先
@@ -212,29 +212,16 @@ class ScxFSS {
      * @param fssObjectIDs s
      * @returns {Promise<unknown>}
      */
-    getFSSObject(fssObjectIDs) {
+    info(fssObjectIDs) {
         return new Promise((resolve, reject) => {
-            this.scxReq.post(this.listURL, {fssObjectIDs: fssObjectIDs}).then(data => {
-                //可以读取的文件
-                const canReadFileList = data.items.map(i => new FSSObject(i));
-                //此处过滤出 无法读取的文件
-                const loseFSSObjectIDs = fssObjectIDs.filter(f => canReadFileList.filter(s => s.fssObjectID === f).length === 0);
-                if (loseFSSObjectIDs !== 0 && loseFSSObjectIDs[0] !== '') {
-                    loseFSSObjectIDs.forEach(fssObjectID => {
-                        const fi = new FSSObject({
-                            fssObjectID: fssObjectID,
-                            fileMD5: '',
-                            fileName: '文件无法读取!!! id 为:' + fssObjectID,
-                            fileSizeDisplay: '未知!!!',
-                            fileSize: 0,
-                            uploadTime: '未知!!!',
-                        });
-                        canReadFileList.unshift(fi);
-                    })
-                }
-                resolve(canReadFileList);
+            const ids = Array.isArray(fssObjectIDs) ? fssObjectIDs : [fssObjectIDs];
+            this.scxReq.post(this.listURL, {fssObjectIDs: ids}).then(data => {
+                const fssObjectList = data.items.map(i => new FSSObject(i));
+                resolve(fssObjectList);
+            }).catch(e => {
+                reject(e)
             });
-        })
+        });
     };
 
     /**
