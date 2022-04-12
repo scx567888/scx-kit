@@ -1,5 +1,8 @@
 <template>
   <scx-fss-upload v-model="nowFile" :before-upload="b"/>
+  <br>
+  <scx-fss-upload v-model="nowFile" :before-upload="b"/>
+  <br>
   <input v-model="nowFile">
 </template>
 
