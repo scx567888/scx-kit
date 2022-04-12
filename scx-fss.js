@@ -1,5 +1,6 @@
 import SparkMD5 from "spark-md5";
 import {JsonVOError} from "./scx-req.js";
+import {percentage} from "./vanilla-percentage.js";
 
 class FSSObject {
     fssObjectID;//文件的 id
@@ -32,6 +33,8 @@ class ScxFSS {
     imageURL = '/api/fss/image/';//image 的 url
     downloadURL = '/api/fss/download/'; //download 的 url
     checkAnyFileExistsByThisMD5URL = '/api/fss/check-any-file-exists-by-this-md5';
+    CHECKING_MD5 = 'checking-md5';
+    UPLOADING = 'uploading';
 
     /**
      * req 对象
@@ -85,7 +88,7 @@ class ScxFSS {
             //设置加载文件回调
             fileReader.onload = (e) => {
                 //设置计算MD5的进度
-                onProgress('checking-md5', Math.round(currentChunk / chunks * 10000) / 100.00);
+                onProgress(this.CHECKING_MD5, percentage(currentChunk, chunks));
                 //读取
                 spark.append(e.target.result);
                 currentChunk = currentChunk + 1;
@@ -95,7 +98,7 @@ class ScxFSS {
                 } else { //读完了 赋值MD5 并返回
                     chunkAndMD5.md5 = spark.end(false);
                     //设置校验 md5 为 100%
-                    onProgress('checking-md5', 100);
+                    onProgress(this.CHECKING_MD5, 100);
                     resolve(chunkAndMD5);
                 }
             };
@@ -145,10 +148,6 @@ class ScxFSS {
                 reject('文件不能大于 ' + ScxFSS.formatFileSize(this.maxUploadSize) + ' !!! 问题文件 : ' + file.name);
                 return;
             }
-
-            //先将上传的回调设置为 待上传
-            onProgress('to-be-upload', 0);
-
             //开始获取 md5和 分块
             ScxFSS.getChunkAndMD5(file, onProgress, this.chunkSize).then(chunkAndMD5 => {
                 const fileName = file.name;
@@ -160,7 +159,7 @@ class ScxFSS {
                 //创建上传方法
                 const uploadNext = () => {
                     //设置进度条 此处由已上传区块数量和全部区块数量计算而得
-                    onProgress('uploading', Math.round(i / chunkAndMD5.chunk.length * 10000) / 100.00);
+                    onProgress(this.UPLOADING, percentage(i, chunk.length));
                     const uploadFormData = new FormData();
                     uploadFormData.append('fileName', fileName);
                     uploadFormData.append('fileData', chunk[i]);
@@ -176,7 +175,7 @@ class ScxFSS {
                             i = data.item;
                             uploadNext();
                         } else if (data.type === 'upload-success') {
-                            onProgress('uploading', 100);
+                            onProgress(this.UPLOADING, 100);
                             resolve(data);
                         } else { //这里就属于返回一些别的 类型了 我们虽然不知道是啥,但肯定不对 所以返回错误
                             reject(data);
@@ -191,7 +190,7 @@ class ScxFSS {
                     fileMD5: md5
                 }).then(data => {
                     //这里表示服务器已经有这个文件了
-                    onProgress('uploading', 100);
+                    onProgress(this.UPLOADING, 100);
                     resolve(data);
                 }).catch(e => {//这里表示服务器没找到这个文件 还是老老实实的传吧
                     //这里错误的种类比较多 也可能是网络错误或者权限错误啥的 这里判断一下先
