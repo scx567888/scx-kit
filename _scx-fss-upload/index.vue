@@ -2,7 +2,7 @@
   <div class="scx-fss-upload">
 
     <!-- 隐藏的 input 用于触发点击上传事件 -->
-    <input ref="hiddenInput" placeholder="file" style="display: none" type="file" @change="onHiddenInputChange()"/>
+    <input ref="hiddenInput" placeholder="file" style="display: none" type="file" @change="onHiddenInputChange"/>
 
     <!-- 有文件时预览文件 -->
     <div v-if="proxyModelValue" class="preview">
@@ -14,21 +14,21 @@
       <span v-else class="preview-text">{{ proxyModelValue }}</span>
       <!-- 操作项 -->
       <div class="operation">
-        <div class="operation-item" @click="downloadFile()">
+        <div class="operation-item" @click="downloadFile">
           下载
         </div>
-        <div class="operation-item" @click="selectFile()">
+        <div class="operation-item" @click="selectFile">
           替换
         </div>
-        <div class="operation-item" @click="deleteFile()">
+        <div class="operation-item" @click="deleteFile">
           删除
         </div>
       </div>
     </div>
 
     <!-- 没有文件时显示 -->
-    <div v-else class="no-preview" @click="selectFile()" :class="dragover ?'dragover ':''" @dragleave="callDragleave()"
-         @dragover="callDragover()" @drop="callDrop()">
+    <div v-else :class="dragover ?'dragover ':''" class="no-preview" @click="selectFile" @dragleave="callDragleave"
+         @dragover="callDragover" @drop="callDrop">
       <scx-icon icon="outlined-plus-circle"/>
       <span class="no-preview-text">支持拖拽</span>
     </div>
