@@ -31,7 +31,8 @@ class ScxFSS {
     maxUploadSize = 10 * 1024 * 1024 * 1024;//最大上传文件 写死 10GB
     chunkSize = 2 * 1024 * 1024;//切片大小 这里写死 2MB
     uploadURL = '/api/fss/upload'; //上传 url
-    listURL = '/api/fss/list'; // 列表 url
+    listInfoURL = '/api/fss/list-info'; // 列表信息 url
+    infoURL = '/api/fss/info'; // 信息 url
     rawURL = '/api/fss/raw/';//raw 的 url
     imageURL = '/api/fss/image/';//image 的 url
     downloadURL = '/api/fss/download/'; //download 的 url
@@ -209,14 +210,28 @@ class ScxFSS {
 
     /**
      *根据文件 id 获取文件基本信息
-     * @param fssObjectIDs s
+     * @param fssObjectID s
      * @returns {Promise<unknown>}
      */
-    info(fssObjectIDs) {
+    info(fssObjectID) {
         return new Promise((resolve, reject) => {
-            const ids = Array.isArray(fssObjectIDs) ? fssObjectIDs : [fssObjectIDs];
-            this.scxReq.post(this.listURL, {fssObjectIDs: ids}).then(data => {
-                const fssObjectList = data.items.map(i => new FSSObject(i));
+            this.scxReq.post(this.infoURL, {fssObjectID}).then(data => {
+                resolve(data ? new FSSObject(data) : null);
+            }).catch(e => {
+                reject(e)
+            });
+        });
+    };
+
+    /**
+     * a
+     * @param fssObjectIDs {Array} a
+     * @returns {Promise<unknown>} a
+     */
+    listInfo(fssObjectIDs) {
+        return new Promise((resolve, reject) => {
+            this.scxReq.post(this.listInfoURL, {fssObjectIDs}).then(data => {
+                const fssObjectList = data.map(i => new FSSObject(i));
                 resolve(fssObjectList);
             }).catch(e => {
                 reject(e)
