@@ -1,0 +1,66 @@
+/*.scx-upload-list {*/
+/*    border-radius: 6px;*/
+/*    cursor: pointer;*/
+/*    position: relative;*/
+/*    overflow: hidden;*/
+/*    transition: 200ms all;*/
+/*}*/
+
+/*.scx-upload:hover {*/
+/*    border-color: #409EFF;*/
+/*}*/
+
+/*.scx-upload.dragover {*/
+/*    background-color: rgba(24, 144, 255, 0.1);*/
+/*    border-color: #409EFF;*/
+/*}*/
+
+/*.scx-upload > .no-preview-image,*/
+/*.scx-upload > .preview-image {*/
+/*    height: 100%;*/
+/*    width: 100%;*/
+/*    pointer-events: none;*/
+/*}*/
+
+/*.scx-upload > .no-preview-image {*/
+/*    display: flex;*/
+/*    justify-content: center;*/
+/*    align-items: center;*/
+/*}*/
+
+/*.scx-upload > .no-preview-image > .scx-icon {*/
+/*    fill: rgba(61, 61, 61, 0.5);*/
+/*    height: 40px;*/
+/*    width: 40px;*/
+/*}*/
+
+/*.scx-upload > .progress {*/
+/*    position: absolute;*/
+/*    width: 100%;*/
+/*    bottom: 0;*/
+/*    left: 0;*/
+/*}*/
+
+/*.scx-upload > .delete-button {*/
+/*    position: absolute;*/
+/*    background: #f56c6c;*/
+/*    right: 0;*/
+/*    top: 0;*/
+/*    width: 20px;*/
+/*    height: 20px;*/
+/*    display: flex;*/
+/*    justify-content: center;*/
+/*    align-items: center;*/
+/*    opacity: 50%;*/
+/*    transition: 200ms ease-in-out opacity;*/
+/*}*/
+
+/*.scx-upload > .delete-button > .scx-icon {*/
+/*    fill: rgba(13, 13, 13, 0.8);*/
+/*    height: 16px;*/
+/*    width: 16px;*/
+/*}*/
+
+/*.scx-upload > .delete-button:hover {*/
+/*    opacity: 100%;*/
+/*}*/
