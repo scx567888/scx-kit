@@ -41,10 +41,10 @@
 
 .scx-upload .preview-text > div {
     /**
-        这里并没有在 .scx-upload > .preview > .preview-text 中使用
+        这里并没有在 .scx-upload .preview-text 中使用
             justify-content: center;
             align-items: center;
-        来进行居中 而是使用
+        来进行居中 而是在子元素(也就是当前注释)中使用
             margin: auto;
         请参阅
             https://stackoverflow.com/questions/33454533/cant-scroll-to-top-of-flex-item-that-is-overflowing-container
@@ -159,7 +159,7 @@
 
 .scx-upload .temp-file-name > div {
     /**
-        参照 47 行
+        参照 44 行
      */
     margin: auto;
     word-break: break-all;
