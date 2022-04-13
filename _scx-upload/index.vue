@@ -2,7 +2,7 @@
   <div class="scx-upload">
 
     <!-- 隐藏的 input 用于触发点击上传事件 -->
-    <input ref="hiddenInput" placeholder="file" style="display: none" type="file" @change="onHiddenInputChange"/>
+    <input ref="hiddenInputRef" placeholder="file" style="display: none" type="file" @change="onHiddenInputChange"/>
 
     <!-- 有文件时预览文件 -->
     <div v-if="proxyModelValue" class="preview">
@@ -90,7 +90,7 @@ export default {
   },
   setup(props, ctx) {
 
-    const hiddenInput = ref(null);// 隐藏 input 的上传 id
+    const hiddenInputRef = ref(null);// 隐藏的 input 上传组件
 
     /**
      * 注入的 scx-fss
@@ -180,7 +180,7 @@ export default {
     }
 
     function selectFile() {
-      hiddenInput.value.click();
+      hiddenInputRef.value.click();
     }
 
     function deleteFile() {
@@ -200,7 +200,7 @@ export default {
     function onHiddenInputChange(e) {
       const needUploadFile = e.target.files[0];
       //重置 上传 input 的值 保证即使点击重复文件也可以上传
-      hiddenInput.value.value = null;
+      hiddenInputRef.value.value = null;
       callUploadHandler(needUploadFile);
     }
 
@@ -228,7 +228,7 @@ export default {
     }
 
     return {
-      hiddenInput,
+      hiddenInputRef,
       proxyModelValue,
       uploadProgress,
       fileInfo,
