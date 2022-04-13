@@ -9,18 +9,22 @@
       <!-- 有预览图时显示预览图 -->
       <img v-if="fileInfo.previewUrl" :src="fileInfo.previewUrl" alt="img" class="preview-image">
       <!-- 没有预览图但是有文件名时显示文件名 -->
-      <span v-else-if="fileInfo.fileName" class="preview-text">{{ fileInfo.fileName }}</span>
+      <div v-else-if="fileInfo.fileName" class="preview-text">
+        <div>{{ fileInfo.fileName }}</div>
+      </div>
       <!-- 都没有时显示文件 id -->
-      <span v-else class="preview-text">{{ proxyModelValue }}</span>
+      <div v-else class="preview-text">
+        <div>{{ proxyModelValue }}</div>
+      </div>
       <!-- 操作项 -->
       <div class="operation">
-        <div class="operation-item item-download" @click="downloadFile">
+        <div class="item-download" @click="downloadFile">
           下载
         </div>
-        <div class="operation-item item-replace" @click="selectFile">
+        <div class="item-replace" @click="selectFile">
           替换
         </div>
-        <div class="operation-item item-delete" @click="deleteFile">
+        <div class="item-delete" @click="deleteFile">
           删除
         </div>
       </div>
@@ -30,11 +34,25 @@
     <div v-else :class="dragover ?'dragover ':''" class="no-preview" @click="selectFile" @dragleave="callDragleave"
          @dragover="callDragover" @drop="callDrop">
       <scx-icon icon="outlined-plus-circle"/>
-      <span class="no-preview-text">支持拖拽</span>
+      <span>点击或拖拽</span>
     </div>
 
-    <!-- 以下为进度条 -->
-    <progress v-if="uploadProgress.visible" :max="100" :value="uploadProgress.value" class="progress"></progress>
+    <div v-if="uploadProgress.visible" class="progress">
+      <div class="temp-file-name">
+        <div>
+          {{ uploadProgress.tempFileName }}
+        </div>
+      </div>
+      <div class="progress-state">
+        <div>
+          <div>上传中</div>
+          <div>{{ uploadProgress.value }}%</div>
+        </div>
+        <!-- 以下为进度条 -->
+        <progress :max="100" :value="uploadProgress.value"></progress>
+      </div>
+
+    </div>
 
   </div>
 </template>
@@ -45,6 +63,7 @@ import {computed, inject, reactive, ref, watch} from "vue";
 import {ScxIcon} from "../scx-icon.js";
 import {CHECKING_MD5, UPLOADING} from "../scx-fss.js";
 import {download} from "../vanilla-download.js";
+import {percentage} from "../vanilla-percentage.js";
 
 export default {
   name: "scx-upload",
@@ -79,7 +98,7 @@ export default {
      */
     const scxFSS = inject("scx-fss", null);
 
-    const uploadProgress = reactive({visible: false, value: 70}); // 进度条参数
+    const uploadProgress = reactive({visible: false, tempFileName: '', value: 0}); // 进度条参数
 
     const proxyModelValue = computed({ //代理 modelValue
       get() {
@@ -95,10 +114,11 @@ export default {
     //默认的 scx-fss 的上传 handler
     const scxFSSUploadHandler = (needUploadFile, progress) => new Promise((resolve, reject) => {
       scxFSS.upload(needUploadFile, (state, value) => {
+        //前 30% 是校验 md5 后 70% 才是真正的文件上传
         if (state === CHECKING_MD5) {
-          progress(value / 2);
+          progress(value * 0.3);
         } else if (state === UPLOADING) {
-          progress(50 + value / 2);
+          progress(30 + value * 0.7);
         }
       }).then(d => resolve(d.item.fssObjectID)).catch(e => reject(e));
     });
@@ -112,10 +132,9 @@ export default {
       const previewUrl = scxFSS.joinImageURL(fileID, {w: 150, h: 150});
       const downloadUrl = scxFSS.joinDownloadURL(fileID);
       onUpdate({previewUrl, downloadUrl});
-      scxFSS.info(fileID).then(d => {
-        const item = d[0];
+      scxFSS.info(fileID).then(item => {
         if (item) {
-          onUpdate({previewUrl, downloadUrl, fileName: d.fileName});
+          onUpdate({previewUrl, downloadUrl, fileName: item.fileName});
         } else {
           onUpdate({previewUrl: null, downloadUrl: null, fileName: '文件无法读取 !!! id : ' + fileID});
         }
@@ -133,14 +152,19 @@ export default {
         }
       }
       const h = props.uploadHandler ? props.uploadHandler : scxFSSUploadHandler;
-      uploadProgress.visible = true
-      h(needUploadFile, (v) => uploadProgress.value = v).then(d => {
+      uploadProgress.visible = true;
+      uploadProgress.tempFileName = needUploadFile.name;
+      h(needUploadFile, (v) => {
+        //处理一下百分比的格式防止  33.33333333333339 这种情况出现
+        uploadProgress.value = percentage(v, 100);
+      }).then(d => {
         proxyModelValue.value = d;
       }).catch(e => {
         console.error(e);
       }).finally(() => {
         uploadProgress.visible = false;
         uploadProgress.value = 0;
+        uploadProgress.tempFileName = '';
       });
     }
 
