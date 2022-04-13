@@ -14,13 +14,13 @@
       <span v-else class="preview-text">{{ proxyModelValue }}</span>
       <!-- 操作项 -->
       <div class="operation">
-        <div class="operation-item" @click="downloadFile">
+        <div class="operation-item item-download" @click="downloadFile">
           下载
         </div>
-        <div class="operation-item" @click="selectFile">
+        <div class="operation-item item-replace" @click="selectFile">
           替换
         </div>
-        <div class="operation-item" @click="deleteFile">
+        <div class="operation-item item-delete" @click="deleteFile">
           删除
         </div>
       </div>

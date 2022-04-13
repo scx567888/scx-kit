@@ -3,7 +3,6 @@
     background: #fafafa;
     border: 3px dashed rgba(114, 114, 114, 0.5);
     border-radius: 6px;
-    cursor: pointer;
     position: relative;
     overflow: hidden;
     width: 150px;
@@ -39,21 +38,13 @@
 /* 预览中操作 */
 .scx-upload > .preview > .operation {
     position: absolute;
-    background: rgba(86, 86, 86);
     bottom: 0;
     width: 100%;
     height: 30px;
     display: grid;
-    opacity: 50%;
-    transition: 200ms ease-in-out opacity;
     grid-template-columns: 1fr 1fr 1fr;
     color: white;
     font-weight: 600;
-}
-
-/* 操作 hover */
-.scx-upload > .preview > .operation:hover {
-    opacity: 100%;
 }
 
 /*操作项子元素*/
@@ -63,17 +54,25 @@
     align-items: center;
     height: 100%;
     flex: 1;
-    border-right: 1px solid white;
-    border-left: 1px solid white;
+    opacity: 50%;
+    transition: 200ms ease-in-out opacity;
+    cursor: pointer;
 }
 
-/*去除两边元素的外层边框*/
-.scx-upload > .preview > .operation > .operation-item:last-child {
-    border-right: none;
+.scx-upload > .preview > .operation > .operation-item:hover {
+    opacity: 100%;
 }
 
-.scx-upload > .preview > .operation > .operation-item:first-child {
-    border-left: none;
+.scx-upload > .preview > .operation > .operation-item.item-download {
+    background: #44be16;
+}
+
+.scx-upload > .preview > .operation > .operation-item.item-replace {
+    background: #29aaf5;
+}
+
+.scx-upload > .preview > .operation > .operation-item.item-delete {
+    background: #f44336;
 }
 
 /* 没有预览时 */
@@ -83,6 +82,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
 }
 
 /* 图标 */
