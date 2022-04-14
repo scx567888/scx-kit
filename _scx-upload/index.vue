@@ -125,7 +125,6 @@ export default {
     //默认的 scx-fss 的上传 handler
     const scxFSSUploadHandler = (needUploadFile, progress) => new Promise((resolve, reject) => {
       scxFSS.upload(needUploadFile, (state, value) => {
-        //前 30% 是校验 md5 后 70% 才是真正的文件上传
         if (state === CHECKING_MD5) {
           progress(value, "校验中");
         } else if (state === UPLOADING) {

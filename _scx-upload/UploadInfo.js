@@ -41,6 +41,12 @@ class UploadInfo {
      * @type {File}
      */
     file = null;
+
+    /**
+     * a
+     * @type {string}
+     */
+    fileID = '';
 }
 
 export {UploadInfo}
