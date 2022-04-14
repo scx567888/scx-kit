@@ -7,10 +7,10 @@
     <!-- 有文件时预览文件 -->
     <div v-if="proxyModelValue" class="preview">
       <!-- 有预览图时显示预览图 -->
-      <img v-if="fileInfo.previewUrl" :src="fileInfo.previewUrl" alt="img" class="preview-image">
+      <img v-if="uploadInfo.previewURL" :src="uploadInfo.previewURL" alt="img" class="preview-image">
       <!-- 没有预览图但是有文件名时显示文件名 -->
-      <div v-else-if="fileInfo.fileName" class="preview-text">
-        <div>{{ fileInfo.fileName }}</div>
+      <div v-else-if="uploadInfo.fileName" class="preview-text">
+        <div>{{ uploadInfo.fileName }}</div>
       </div>
       <!-- 都没有时显示文件 id -->
       <div v-else class="preview-text">
@@ -37,19 +37,19 @@
       <span>点击或拖拽</span>
     </div>
 
-    <div v-if="uploadProgress.visible" class="progress">
+    <div v-if="uploadInfo.progressVisible" class="progress">
       <div class="temp-file-name">
         <div>
-          {{ uploadProgress.tempFileName }}
+          {{ uploadInfo.fileName }}
         </div>
       </div>
       <div class="progress-state">
         <div>
           <div>上传中</div>
-          <div>{{ uploadProgress.value }}%</div>
+          <div>{{ uploadInfo.progressValue }}%</div>
         </div>
         <!-- 以下为进度条 -->
-        <progress :max="100" :value="uploadProgress.value"></progress>
+        <progress :max="100" :value="uploadInfo.progressValue"></progress>
       </div>
 
     </div>
@@ -64,6 +64,7 @@ import {ScxIcon} from "../scx-icon.js";
 import {CHECKING_MD5, UPLOADING} from "../scx-fss.js";
 import {download} from "../vanilla-download.js";
 import {percentage} from "../vanilla-percentage.js";
+import {UploadInfo} from "./UploadInfo.js";
 
 export default {
   name: "scx-upload",
@@ -98,9 +99,17 @@ export default {
      */
     const scxFSS = inject("scx-fss", null);
 
-    const uploadProgress = reactive({visible: false, tempFileName: '', value: 0}); // 进度条参数
+    /**
+     * 上传信息
+     * @type {UnwrapNestedRefs<UploadInfo>}
+     */
+    const uploadInfo = reactive(new UploadInfo());
 
-    const proxyModelValue = computed({ //代理 modelValue
+    /**
+     * 代理 modelValue
+     * @type {WritableComputedRef<string>}
+     */
+    const proxyModelValue = computed({
       get() {
         return props.modelValue;
       },
@@ -108,8 +117,6 @@ export default {
         ctx.emit("update:modelValue", value);
       }
     });
-
-    const fileInfo = reactive({fileName: '未知文件', previewUrl: null, downloadUrl: null});
 
     //默认的 scx-fss 的上传 handler
     const scxFSSUploadHandler = (needUploadFile, progress) => new Promise((resolve, reject) => {
@@ -126,17 +133,17 @@ export default {
     //默认的 scx-fss 的 fileInfoHandler
     const scxFSSFileInfoHandler = (fileID, onUpdate, onError) => {
       if (!fileID) {
-        onUpdate({previewUrl: null, downloadUrl: null, fileName: null});
+        onUpdate({previewURL: null, downloadURL: null, fileName: null});
         return;
       }
-      const previewUrl = scxFSS.joinImageURL(fileID, {w: 150, h: 150});
-      const downloadUrl = scxFSS.joinDownloadURL(fileID);
-      onUpdate({previewUrl, downloadUrl});
+      const previewURL = scxFSS.joinImageURL(fileID, {w: 150, h: 150});
+      const downloadURL = scxFSS.joinDownloadURL(fileID);
+      onUpdate({previewURL, downloadURL});
       scxFSS.info(fileID).then(item => {
         if (item) {
-          onUpdate({previewUrl, downloadUrl, fileName: item.fileName});
+          onUpdate({previewURL, downloadURL, fileName: item.fileName});
         } else {
-          onUpdate({previewUrl: null, downloadUrl: null, fileName: '文件无法读取 !!! id : ' + fileID});
+          onUpdate({previewURL: null, downloadURL: null, fileName: '文件无法读取 !!! id : ' + fileID});
         }
       }).catch(c => {
         onError(c)
@@ -152,28 +159,27 @@ export default {
         }
       }
       const h = props.uploadHandler ? props.uploadHandler : scxFSSUploadHandler;
-      uploadProgress.visible = true;
-      uploadProgress.tempFileName = needUploadFile.name;
+      uploadInfo.progressVisible = true;
+      uploadInfo.fileName = needUploadFile.name;
       h(needUploadFile, (v) => {
         //处理一下百分比的格式防止  33.33333333333339 这种情况出现
-        uploadProgress.value = percentage(v, 100);
+        uploadInfo.progressValue = percentage(v, 100);
       }).then(d => {
         proxyModelValue.value = d;
       }).catch(e => {
         console.error(e);
       }).finally(() => {
-        uploadProgress.visible = false;
-        uploadProgress.value = 0;
-        uploadProgress.tempFileName = '';
+        uploadInfo.progressVisible = false;
+        uploadInfo.progressValue = 0;
       });
     }
 
     function callFileInfoHandler(fileID) {
       const h = props.fileInfoHandler ? props.fileInfoHandler : scxFSSFileInfoHandler;
       h(fileID, (f) => {
-        fileInfo.previewUrl = f.previewUrl;
-        fileInfo.fileName = f.fileName;
-        fileInfo.downloadUrl = f.downloadUrl;
+        uploadInfo.fileName = f.fileName;
+        uploadInfo.previewURL = f.previewURL;
+        uploadInfo.downloadURL = f.downloadURL;
       }, (e) => {
         console.log(e);
       });
@@ -188,11 +194,11 @@ export default {
     }
 
     function downloadFile() {
-      if (fileInfo && fileInfo.downloadUrl) {
-        if (fileInfo.fileName) {
-          download(fileInfo.downloadUrl, fileInfo.fileName);
+      if (uploadInfo && uploadInfo.downloadURL) {
+        if (uploadInfo.fileName) {
+          download(uploadInfo.downloadURL, uploadInfo.fileName);
         } else {
-          download(fileInfo.downloadUrl);
+          download(uploadInfo.downloadURL);
         }
       }
     }
@@ -230,8 +236,7 @@ export default {
     return {
       hiddenInputRef,
       proxyModelValue,
-      uploadProgress,
-      fileInfo,
+      uploadInfo,
       dragover,
       onHiddenInputChange,
       selectFile,
