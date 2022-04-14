@@ -45,7 +45,7 @@
       </div>
       <div class="progress-state">
         <div>
-          <div>上传中</div>
+          <div>{{ uploadInfo.progressState }}</div>
           <div>{{ uploadInfo.progressValue }}%</div>
         </div>
         <!-- 以下为进度条 -->
@@ -91,19 +91,17 @@ export default {
   },
   setup(props, ctx) {
 
-    const hiddenInputRef = ref(null);// 隐藏的 input 上传组件
+    /**
+     *  隐藏的 input 上传组件
+     *
+     */
+    const hiddenInputRef = ref(null);
 
     /**
      * 注入的 scx-fss
      * @type {ScxFSS}
      */
     const scxFSS = inject("scx-fss", null);
-
-    /**
-     * 上传信息
-     * @type {UnwrapNestedRefs<UploadInfo>}
-     */
-    const uploadInfo = reactive(new UploadInfo());
 
     /**
      * 代理 modelValue
@@ -118,14 +116,20 @@ export default {
       }
     });
 
+    /**
+     * 上传信息
+     * @type {UnwrapNestedRefs<UploadInfo>}
+     */
+    const uploadInfo = reactive(new UploadInfo());
+
     //默认的 scx-fss 的上传 handler
     const scxFSSUploadHandler = (needUploadFile, progress) => new Promise((resolve, reject) => {
       scxFSS.upload(needUploadFile, (state, value) => {
         //前 30% 是校验 md5 后 70% 才是真正的文件上传
         if (state === CHECKING_MD5) {
-          progress(value * 0.3);
+          progress(value, "校验中");
         } else if (state === UPLOADING) {
-          progress(30 + value * 0.7);
+          progress(value, "上传中");
         }
       }).then(d => resolve(d.item.fssObjectID)).catch(e => reject(e));
     });
@@ -161,8 +165,9 @@ export default {
       const h = props.uploadHandler ? props.uploadHandler : scxFSSUploadHandler;
       uploadInfo.progressVisible = true;
       uploadInfo.fileName = needUploadFile.name;
-      h(needUploadFile, (v) => {
+      h(needUploadFile, (v, s = "上传中") => {
         //处理一下百分比的格式防止  33.33333333333339 这种情况出现
+        uploadInfo.progressState = s;
         uploadInfo.progressValue = percentage(v, 100);
       }).then(d => {
         proxyModelValue.value = d;
