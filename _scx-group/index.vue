@@ -1,13 +1,13 @@
 <template>
   <div class="scx-group">
-    <transition-group name="scx-group-list" @before-leave="beforeLeave">
+    <transition-group name="scx-group-list" @before-leave="fixedElement">
       <div v-for="(item,i) in list" :key="item" class="scx-group scx-group-item">
         <div class="scx-group-item-content">
           <slot :index="i" :item="item"></slot>
         </div>
         <div style="position: absolute;top: 0;right: 0;">
-          <button v-if="i>0" @click="moveUp(i)">↑</button>
-          <button v-if="i<list.length-1" @click="moveDown(i)">↓</button>
+          <button v-if="i>0" @click="groupItemMoveUp(i)">↑</button>
+          <button v-if="i<list.length-1" @click="groupItemMoveDown(i)">↓</button>
           <button @click="groupItemDelete(i)">X</button>
         </div>
       </div>
@@ -23,6 +23,8 @@
 <script>
 import './index.css'
 import {computed} from "vue";
+import {fixedElement} from "../thirdparty-vue-transition.js";
+import {moveDownByIndex, moveUpByIndex, removeByIndex} from "../vanilla-array-utils.js";
 
 export default {
   name: "scx-group",
@@ -76,35 +78,27 @@ export default {
           return;
         }
       }
-      list.value.splice(index, 1);
+      removeByIndex(list.value, index);
     }
 
-    function moveUp(index) {
+    function groupItemMoveUp(index) {
       if (props.beforeMoveUp) {
         //如果返回值是 false 则不添加
         if (!props.beforeMoveUp(index)) {
           return;
         }
       }
-      if (index - 1 >= 0) {
-        const temp = list.value[index];
-        list.value[index] = list.value[index - 1];
-        list.value[index - 1] = temp;
-      }
+      moveUpByIndex(list.value, index);
     }
 
-    function moveDown(index) {
+    function groupItemMoveDown(index) {
       if (props.beforeMoveDown) {
         //如果返回值是 false 则不添加
         if (!props.beforeMoveDown(index)) {
           return;
         }
       }
-      if (index + 1 <= list.value.length) {
-        const temp = list.value[index];
-        list.value[index] = list.value[index + 1];
-        list.value[index + 1] = temp;
-      }
+      moveDownByIndex(list.value, index);
     }
 
     function groupItemAdd() {
@@ -118,15 +112,7 @@ export default {
       list.value.push(v);
     }
 
-    function beforeLeave(el) {
-      const {marginLeft, marginTop, width, height} = window.getComputedStyle(el);
-      el.style.left = `${el.offsetLeft - parseFloat(marginLeft)}px`;
-      el.style.top = `${el.offsetTop - parseFloat(marginTop)}px`;
-      el.style.width = width;
-      el.style.height = height;
-    }
-
-    return {list, groupItemDelete, groupItemAdd, beforeLeave, moveUp, moveDown}
+    return {list, groupItemDelete, groupItemAdd, fixedElement, groupItemMoveUp, groupItemMoveDown}
   }
 }
 </script>
