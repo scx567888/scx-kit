@@ -1,9 +1,5 @@
 <template>
-  <scx-group v-model="data" :beforeAdd="aaa"
-             :beforeRemove="bbb"
-             :loop="false"
-             :default-item-value="{name:'',age:'',c:[]}"
-  >
+  <scx-group v-model="data" :beforeAdd="aaa" :beforeRemove="bbb" :loop="false">
     <template #default="{item,index}">
       <div class="test-input-wrapper">
         姓名
@@ -12,7 +8,7 @@
         <input v-model="item.age"/>
       </div>
       <h3>子数据</h3>
-      <scx-group v-model="item.c" :default-item-value="{b:'',d:''}">
+      <scx-group v-model="item.c">
         <template #default="h">
           <div class="test-input-wrapper">
             B
@@ -21,21 +17,17 @@
             <input v-model="h.item.d"/>
           </div>
         </template>
+        <template #after>
+          <button @click="groupItemAdd2(item.c)">添加一条子级数据</button>
+        </template>
       </scx-group>
     </template>
-    <template #addButtonContent>
-      <button>自定义的父级添加按钮</button>
-    </template>
-    <template #deleteButtonContent="{index,item}">
-      <button>自定义的父级删除按钮 此条数据的姓名是 : {{ item.name }}</button>
+    <template #after>
+      <button @click="groupItemAdd1()">添加一条父级数据</button>
     </template>
   </scx-group>
 
-  <scx-group v-model="data" :beforeAdd="aaa"
-             :beforeRemove="bbb"
-             :loop="false"
-             :default-item-value="{name:'',age:'',c:[]}"
-  >
+  <scx-group v-model="data" :beforeAdd="aaa" :beforeRemove="bbb" :loop="false">
     <template #default="{item,index}">
       <div class="test-input-wrapper">
         姓名
@@ -44,7 +36,7 @@
         <input v-model="item.age"/>
       </div>
       <h3>子数据</h3>
-      <scx-group v-model="item.c" :default-item-value="{b:'',d:''}">
+      <scx-group v-model="item.c">
         <template #default="h">
           <div class="test-input-wrapper">
             B
@@ -53,13 +45,13 @@
             <input v-model="h.item.d"/>
           </div>
         </template>
+        <template #after>
+          <button @click="groupItemAdd2(item.c)">添加一条子级数据</button>
+        </template>
       </scx-group>
     </template>
-    <template #addButtonContent>
-      <button>自定义的父级添加按钮</button>
-    </template>
-    <template #deleteButtonContent="{index,item}">
-      <button>自定义的父级删除按钮 此条数据的姓名是 : {{ item.name }}</button>
+    <template #after>
+      <button @click="groupItemAdd1()">添加一条父级数据</button>
     </template>
   </scx-group>
   {{ data }}
@@ -99,6 +91,14 @@ function bbb(i) {
   console.log(i)
   alert("删除成功");
   return true
+}
+
+function groupItemAdd1() {
+  data.value.push({name: '', age: '', c: []})
+}
+
+function groupItemAdd2(l) {
+  l.push({b: '', d: ''})
 }
 </script>
 <style scoped>

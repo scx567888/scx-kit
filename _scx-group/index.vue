@@ -1,22 +1,29 @@
 <template>
   <div class="scx-group">
+    <slot name="before"></slot>
     <transition-group name="scx-group-list" @before-leave="fixedElement">
-      <div v-for="(item,i) in list" :key="item" class="scx-group scx-group-item">
-        <div class="scx-group-item-content">
-          <slot :index="i" :item="item"></slot>
-        </div>
-        <div style="position: absolute;top: 0;right: 0;">
-          <button v-if="loop||i>0" @click="groupItemMoveUp(i)">↑</button>
-          <button v-if="loop||i<list.length-1" @click="groupItemMoveDown(i)">↓</button>
-          <button @click="groupItemDelete(i)">X</button>
+      <div v-for="(item,i) in list" :key="item" class="scx-group-item">
+        <slot :index="i" :item="item"></slot>
+        <div class="scx-group-item-operation">
+          <div v-if="showMoveUp(i)" @click="groupItemMoveUp(i)" class="scx-group-item-move-up-button">
+            <slot name="moveUpButton">
+              <button>↑</button>
+            </slot>
+          </div>
+          <div v-if="showMoveDown(i)" @click="groupItemMoveDown(i)" class="scx-group-item-move-down-button">
+            <slot name="moveDownButton">
+              <button>↓</button>
+            </slot>
+          </div>
+          <div @click="groupItemRemove(i)" class="scx-group-item-remove-button">
+            <slot name="removeButton">
+              <button>X</button>
+            </slot>
+          </div>
         </div>
       </div>
     </transition-group>
-    <div @click="groupItemAdd()">
-      <slot name="addButtonContent">
-        <button>添加一条数据</button>
-      </slot>
-    </div>
+    <slot name="after"></slot>
   </div>
 </template>
 
@@ -33,15 +40,6 @@ export default {
       type: Array,
       required: true,
       default: [],
-    },
-    defaultItemValue: {
-      type: Object,
-      required: true,
-      default: {},
-    },
-    beforeAdd: { // 在这里我们还可以更改待添加的数据
-      type: Function,
-      default: null
     },
     beforeRemove: {
       type: Function,
@@ -75,7 +73,7 @@ export default {
       }
     })
 
-    function groupItemDelete(index) {
+    function groupItemRemove(index) {
       if (props.beforeRemove) {
         //如果返回值是 false 则不添加
         if (!props.beforeRemove(list.value[index])) {
@@ -105,18 +103,35 @@ export default {
       list.value = moveDownByIndex(list.value, index, props.loop);
     }
 
-    function groupItemAdd() {
-      const v = JSON.parse(JSON.stringify(props.defaultItemValue));
-      if (props.beforeAdd) {
-        //如果返回值是 false 则不添加
-        if (!props.beforeAdd(v)) {
-          return;
-        }
+    function showMoveUp(i) {
+      const minIndex = 0;
+      //数据量小的时候没必要显示
+      if (list.value.length <= 2 && i === minIndex) {
+        return false;
+      } else {//数据量大的时候 如果没启用循环 第一项不显示
+        return props.loop ? true : i !== minIndex;
       }
-      list.value.push(v);
     }
 
-    return {list, groupItemDelete, groupItemAdd, fixedElement, groupItemMoveUp, groupItemMoveDown}
+    function showMoveDown(i) {
+      const maxIndex = list.value.length - 1;
+      //数据量小的时候没必要显示
+      if (list.value.length <= 2 && i === maxIndex) {
+        return false;
+      } else { //数据量大的时候 如果没启用循环 最后一项不显示
+        return props.loop ? true : i !== maxIndex;
+      }
+    }
+
+    return {
+      list,
+      groupItemRemove,
+      fixedElement,
+      groupItemMoveUp,
+      groupItemMoveDown,
+      showMoveUp,
+      showMoveDown
+    }
   }
 }
 </script>
