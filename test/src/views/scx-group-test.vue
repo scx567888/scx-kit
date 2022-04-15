@@ -1,6 +1,7 @@
 <template>
   <scx-group v-model="data" :beforeAdd="aaa"
              :beforeRemove="bbb"
+             :loop="false"
              :default-item-value="{name:'',age:'',c:[]}"
   >
     <template #default="{item,index}">

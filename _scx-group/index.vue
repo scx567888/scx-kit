@@ -6,8 +6,8 @@
           <slot :index="i" :item="item"></slot>
         </div>
         <div style="position: absolute;top: 0;right: 0;">
-          <button v-if="i>0" @click="groupItemMoveUp(i)">↑</button>
-          <button v-if="i<list.length-1" @click="groupItemMoveDown(i)">↓</button>
+          <button v-if="loop||i>0" @click="groupItemMoveUp(i)">↑</button>
+          <button v-if="loop||i<list.length-1" @click="groupItemMoveDown(i)">↓</button>
           <button @click="groupItemDelete(i)">X</button>
         </div>
       </div>
@@ -54,6 +54,10 @@ export default {
     beforeMoveDown: {
       type: Function,
       default: null
+    },
+    loop: {
+      type: Boolean,
+      default: true
     }
   },
   setup(props, ctx) {
@@ -88,7 +92,7 @@ export default {
           return;
         }
       }
-      moveUpByIndex(list.value, index);
+      moveUpByIndex(list.value, index, props.loop);
     }
 
     function groupItemMoveDown(index) {
@@ -98,7 +102,7 @@ export default {
           return;
         }
       }
-      moveDownByIndex(list.value, index);
+      moveDownByIndex(list.value, index, props.loop);
     }
 
     function groupItemAdd() {
