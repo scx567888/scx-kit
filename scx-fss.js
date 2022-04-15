@@ -78,6 +78,8 @@ class ScxFSS {
                 chunk: [],
                 md5: ''
             }
+            //不需要切割 (适用于文件大小 < 分块大小的情况, 因为比较常见 所以单独做处理)
+            const noNeedSlice = file.size <= chunkSize;
             //计算需要分块的数量
             const chunks = Math.ceil(file.size / chunkSize);
             //当前分块
@@ -110,15 +112,19 @@ class ScxFSS {
 
             //加载区块方法
             const loadNext = () => {
-                //获取起始位置字节数
-                const start = currentChunk * chunkSize;
-                //获取结束位置字节数
-                const end = Math.min(start + chunkSize, file.size);
-                //按照 分块的大小进行切割文件
-                const tempFileChunk = file.slice(start, end);
-                //将切割后的区块放入 fileInfo 对象的 chunk 中以便之后使用
+                let tempFileChunk;
+                if (noNeedSlice) { // 不切割
+                    tempFileChunk = file;
+                } else { // 按照 分块的大小进行切割文件
+                    // 获取起始位置字节数
+                    const start = currentChunk * chunkSize;
+                    // 获取结束位置字节数
+                    const end = Math.min(start + chunkSize, file.size);
+                    tempFileChunk = file.slice(start, end);
+                }
+                // 将切割后的区块放入 fileInfo 对象的 chunk 中以便之后使用
                 chunkAndMD5.chunk.push(tempFileChunk);
-                //读取 (这里起始就是走的 fileReader.onload 方法)
+                // 读取 (这里起始就是走的 fileReader.onload 方法)
                 fileReader.readAsArrayBuffer(tempFileChunk);
             }
 
