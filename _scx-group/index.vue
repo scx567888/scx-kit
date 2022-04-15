@@ -2,14 +2,24 @@
   <div class="scx-group">
     <slot name="before"></slot>
     <transition-group name="scx-group-list" @before-leave="fixedElement">
-      <div v-for="(item,i) in list" :key="item" class="scx-group scx-group-item">
-        <div class="scx-group-item-content">
-          <slot :index="i" :item="item"></slot>
-        </div>
-        <div style="position: absolute;top: 0;right: 0;">
-          <button v-if="showMoveUp(i)" @click="groupItemMoveUp(i)">↑</button>
-          <button v-if="showMoveDown(i)" @click="groupItemMoveDown(i)">↓</button>
-          <button @click="groupItemDelete(i)">X</button>
+      <div v-for="(item,i) in list" :key="item" class="scx-group-item">
+        <slot :index="i" :item="item"></slot>
+        <div class="scx-group-item-operation">
+          <div v-if="showMoveUp(i)" @click="groupItemMoveUp(i)" class="scx-group-item-move-up-button">
+            <slot name="moveUpButton">
+              <button>↑</button>
+            </slot>
+          </div>
+          <div v-if="showMoveDown(i)" @click="groupItemMoveDown(i)" class="scx-group-item-move-down-button">
+            <slot name="moveDownButton">
+              <button>↓</button>
+            </slot>
+          </div>
+          <div @click="groupItemRemove(i)" class="scx-group-item-remove-button">
+            <slot name="removeButton">
+              <button>X</button>
+            </slot>
+          </div>
         </div>
       </div>
     </transition-group>
@@ -63,7 +73,7 @@ export default {
       }
     })
 
-    function groupItemDelete(index) {
+    function groupItemRemove(index) {
       if (props.beforeRemove) {
         //如果返回值是 false 则不添加
         if (!props.beforeRemove(list.value[index])) {
@@ -115,7 +125,7 @@ export default {
 
     return {
       list,
-      groupItemDelete,
+      groupItemRemove,
       fixedElement,
       groupItemMoveUp,
       groupItemMoveDown,

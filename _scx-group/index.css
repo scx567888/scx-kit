@@ -1,22 +1,43 @@
 .scx-group {
     position: relative;
+    width: 100%;
     box-sizing: border-box;
+    padding: 10px;
+    /* 特有 css */
     display: flex;
     flex-direction: column;
     row-gap: 10px;
     align-items: center;
-    padding: 10px;
 }
 
 .scx-group-item {
+    position: relative;
     width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    /* 特有 css */
     border: 1px dashed #c8c8c8;
     background-color: rgba(24, 144, 255, 0.1);
     transition: transform 600ms ease, opacity 600ms ease;
 }
 
-.scx-group-item-content {
-    width: 100%;
+.scx-group-item-operation {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+}
+
+.scx-group-item-move-up-button {
+    /* 占位用 方便开发者覆盖 css */
+}
+
+.scx-group-item-move-down-button {
+    /* 占位用 方便开发者覆盖 css */
+}
+
+.scx-group-item-remove-button {
+    /* 占位用 方便开发者覆盖 css */
 }
 
 /*以下为 vue 动画*/
