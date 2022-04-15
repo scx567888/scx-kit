@@ -6,8 +6,8 @@
           <slot :index="i" :item="item"></slot>
         </div>
         <div style="position: absolute;top: 0;right: 0;">
-          <button v-if="loop||i>0" @click="groupItemMoveUp(i)">↑</button>
-          <button v-if="loop||i<list.length-1" @click="groupItemMoveDown(i)">↓</button>
+          <button v-if="showMoveUp(i)" @click="groupItemMoveUp(i)">↑</button>
+          <button v-if="showMoveDown(i)" @click="groupItemMoveDown(i)">↓</button>
           <button @click="groupItemDelete(i)">X</button>
         </div>
       </div>
@@ -116,7 +116,36 @@ export default {
       list.value.push(v);
     }
 
-    return {list, groupItemDelete, groupItemAdd, fixedElement, groupItemMoveUp, groupItemMoveDown}
+    function showMoveUp(i) {
+      const minIndex = 0;
+      //数据量小的时候没必要显示
+      if (list.value.length <= 2 && i === minIndex) {
+        return false;
+      } else {//数据量大的时候 如果没启用循环 第一项不显示
+        return props.loop ? true : i !== minIndex;
+      }
+    }
+
+    function showMoveDown(i) {
+      const maxIndex = list.value.length - 1;
+      //数据量小的时候没必要显示
+      if (list.value.length <= 2 && i === maxIndex) {
+        return false;
+      } else { //数据量大的时候 如果没启用循环 最后一项不显示
+        return props.loop ? true : i !== maxIndex;
+      }
+    }
+
+    return {
+      list,
+      groupItemDelete,
+      groupItemAdd,
+      fixedElement,
+      groupItemMoveUp,
+      groupItemMoveDown,
+      showMoveUp,
+      showMoveDown
+    }
   }
 }
 </script>
