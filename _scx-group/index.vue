@@ -82,7 +82,7 @@ export default {
           return;
         }
       }
-      removeByIndex(list.value, index);
+      list.value = removeByIndex(list.value, index);
     }
 
     function groupItemMoveUp(index) {
@@ -92,7 +92,7 @@ export default {
           return;
         }
       }
-      moveUpByIndex(list.value, index, props.loop);
+      list.value = moveUpByIndex(list.value, index, props.loop);
     }
 
     function groupItemMoveDown(index) {
@@ -102,7 +102,7 @@ export default {
           return;
         }
       }
-      moveDownByIndex(list.value, index, props.loop);
+      list.value = moveDownByIndex(list.value, index, props.loop);
     }
 
     function groupItemAdd() {

@@ -1,10 +1,21 @@
 /**
+ * 我们不直接操作原数组而是返回新数组
+ * @param list
+ * @returns {*[]}
+ */
+function copyArray(list) {
+    return [...list]
+}
+
+/**
  * 根据 索引 从数组中移除 项
  * @param list
  * @param index
  */
 function removeByIndex(list, index) {
-    list.splice(index, 1);
+    const r = copyArray(list);
+    r.splice(index, 1);
+    return r;
 }
 
 /**
@@ -14,15 +25,17 @@ function removeByIndex(list, index) {
  * @param newIndex a
  */
 function moveItemByIndex(list, oldIndex, newIndex) {
+    const r = copyArray(list);
     //经过计算 后有可能导致 索引没变化 这时就不需要在移动一次了
     if (oldIndex !== newIndex) {
         //保存临时数据
-        const oldItem = list[oldIndex];
+        const oldItem = r[oldIndex];
         //从原数组中移除数据
-        removeByIndex(list, oldIndex);
+        r.splice(oldIndex, 1);
         //在指定位置插入新数据
-        insertItem(list, newIndex, oldItem);
+        r.splice(newIndex, 0, oldItem);
     }
+    return r;
 }
 
 /**
@@ -38,7 +51,7 @@ function moveUpByIndex(list, index, loop = false, step = 1) {
     if (nextIndex < minIndex) {
         nextIndex = loop ? nextIndex % list.length + list.length : minIndex;
     }
-    moveItemByIndex(list, index, nextIndex);
+    return moveItemByIndex(list, index, nextIndex);
 }
 
 /**
@@ -54,7 +67,7 @@ function moveDownByIndex(list, index, loop = false, step = 1) {
     if (nextIndex > maxIndex) {
         nextIndex = loop ? nextIndex % list.length : maxIndex;
     }
-    moveItemByIndex(list, index, nextIndex);
+    return moveItemByIndex(list, index, nextIndex);
 }
 
 /**
@@ -63,7 +76,7 @@ function moveDownByIndex(list, index, loop = false, step = 1) {
  * @param item
  */
 function removeByItem(list, item) {
-    removeByIndex(list, list.indexOf(item));
+    return removeByIndex(list, list.indexOf(item));
 }
 
 /**
@@ -74,7 +87,7 @@ function removeByItem(list, item) {
  * @param step 步长
  */
 function moveUpByItem(list, item, loop = false, step = 1) {
-    moveUpByIndex(list, list.indexOf(item), loop, step);
+    return moveUpByIndex(list, list.indexOf(item), loop, step);
 }
 
 /**
@@ -85,7 +98,7 @@ function moveUpByItem(list, item, loop = false, step = 1) {
  * @param step 步长
  */
 function moveDownByItem(list, item, loop = false, step = 1) {
-    moveDownByIndex(list, list.indexOf(item), loop, step);
+    return moveDownByIndex(list, list.indexOf(item), loop, step);
 }
 
 /**
@@ -95,13 +108,15 @@ function moveDownByItem(list, item, loop = false, step = 1) {
  * @param items 项
  */
 function insertItem(list, index, ...items) {
+    const r = copyArray(list);
     if (index < 0) {
-        list.unshift(...items);
+        r.unshift(...items);
     } else if (index > list.length) {
-        list.push(...items);
+        r.push(...items);
     } else {
-        list.splice(index, 0, ...items);
+        r.splice(index, 0, ...items);
     }
+    return r;
 }
 
 export {
