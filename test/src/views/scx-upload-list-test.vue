@@ -5,6 +5,7 @@
   <br>
   <input v-model="nowFiles">
   {{nowFiles}}
+
 </template>
 
 <script setup>

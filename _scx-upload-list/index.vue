@@ -1,24 +1,35 @@
 <template>
   <div class="scx-upload-list">
-    <!-- 隐藏的 input 用于触发点击上传事件 -->
-    <input ref="hiddenInput" multiple placeholder="file" style="display: none" type="file"
-           @change="onHiddenInputChange"/>
-    <!-- 有文件时显示的图片 -->
-    <button @click="callSelectFile">点击上传</button>
-    <!-- 删除按钮 -->
 
-    <div v-for="fileInfo in fileInfoList">
-      {{ fileInfo }}
+    <!-- 隐藏的 input 用于触发点击上传事件 -->
+    <input ref="hiddenInputRef" multiple placeholder="file" style="display: none" type="file" @change="onHiddenInputChange">
+
+    <!-- 上传按钮 -->
+    <button @click="selectFile">点击上传</button>
+
+    <!-- 删除按钮 -->
+    <div v-for="(uploadInfo,i) in uploadInfoList" class="item">
+      {{ uploadInfo }}
+      <progress v-if="uploadInfo.progressState" :max="100" :value="uploadInfo.progressValue" class="progress"></progress>
+      <div style="position: absolute;top: 0;right: 0;">
+        <button v-if="i>0" @click="moveUp(i)">↑</button>
+        <button v-if="i<uploadInfoList.length-1" @click="moveDown(i)">↓</button>
+        <button @click="groupItemDelete(i)">X</button>
+      </div>
     </div>
-    <!-- 以下为进度条 -->
-    <progress v-if="uploadProgress.visible" :max="100" :value="uploadProgress.value" class="progress"></progress>
+
+    {{s}}
+
   </div>
 </template>
 
 <script>
 import './index.css'
-import {computed, inject, reactive, ref, watch} from "vue";
+import {computed, inject, ref, watch} from "vue";
 import {ScxIcon} from "../scx-icon.js";
+import {CHECKING_MD5, UPLOADING} from "../scx-fss.js";
+import {UploadInfo} from "../_scx-upload/UploadInfo.js";
+import { insertItem} from "../vanilla-array-utils.js";
 
 export default {
   name: "scx-upload-list",
@@ -40,23 +51,29 @@ export default {
     }
   },
   setup(props, ctx) {
+    const s = [1, 2, 3];
+    insertItem(s,1,999,888);
+    console.log(s)
+    /**
+     *  隐藏的 input 上传组件
+     *
+     */
+    const hiddenInputRef = ref(null);
 
-    //隐藏 input 的上传 id
-    const hiddenInput = ref(null);
+    function selectFile() {
+      hiddenInputRef.value.click();
+    }
 
     /**
-     * 注入的外部fss
+     * 注入的 scx-fss
      * @type {ScxFSS}
      */
     const scxFSS = inject("scx-fss", null);
 
-    //进度条参数
-    const uploadProgress = reactive({visible: false, value: 70});
-
-    //拖拽状态
-    const dragover = ref(false);
-
-    // 文件
+    /**
+     * 代理 modelValue
+     * @type {WritableComputedRef<string[]>}
+     */
     const proxyModelValue = computed({
       get() {
         return props.modelValue;
@@ -66,66 +83,55 @@ export default {
       }
     });
 
-    const fileInfoList = ref([]);
+    /**
+     * 上传信息列表
+     * @type {Ref<UnwrapRef<UploadInfo[]>>}
+     */
+    const uploadInfoList = ref([]);
 
+    //默认的 scx-fss 的上传 handler
     const scxFSSUploadHandler = (needUploadFile, progress) => new Promise((resolve, reject) => {
-      scxFSS.fssUpload({
-        needUploadFile, uploadProgressCallback(type, v) {
-          if (type === 'checking-md5') {
-            progress(v / 2);
-          } else if (type === 'uploading') {
-            progress(50 + v / 2);
-          }
+      scxFSS.upload(needUploadFile, (state, value) => {
+        if (state === CHECKING_MD5) {
+          progress(value, "校验中");
+        } else if (state === UPLOADING) {
+          progress(value, "上传中");
         }
       }).then(d => resolve(d.item.fssObjectID)).catch(e => reject(e));
     });
 
     //上传文件
     function callUploadHandler(needUploadFiles) {
-      const nowUploadInfoTaskList = [];
       for (const needUploadFile of needUploadFiles) {
-        let needUploadTask = reactive({fileName: needUploadFile.name, file: needUploadFile});
-        nowUploadInfoTaskList.push(needUploadTask);
-        fileInfoList.value.push(needUploadTask);
+        const u = new UploadInfo();
+        u.fileName = needUploadFile.name;
+        u.file = needUploadFile;
+        u.progressState = "等待上传中...";
+        u.progressVisible = true;
+        u.progressValue = 0;
+        uploadInfoList.value.push(u);
       }
-      var s = nowUploadInfoTaskList.length;
-      for (let task of nowUploadInfoTaskList) {
-        scxFSSUploadHandler(task.file, (type, v) => {
-          task.type = type
-          task.v = v
+      const uu = uploadInfoList.value.filter(u => u.progressState === "等待上传中...");
+      let ul = uu.length;
+      for (let u of uu) {
+        scxFSSUploadHandler(u.file, (v, s = "上传中") => {
+          u.progressValue = v;
+          u.progressState = s;
         }).then(d => {
-          task.fileID = d;
+          u.fileID = d;
         }).catch(e => {
           console.error(e);
         }).finally(() => {
-          task.file = null;
-          s = s - 1;
-          if (s === 0) {
-            // alert("全部上传完毕");
-            proxyModelValue.value.push(...nowUploadInfoTaskList.map(c => c.fileID))
+          u.file = null;
+          ul = ul - 1;
+          if (ul === 0) {
+            alert("全部上传完毕");
+            // proxyModelValue.value.push(...nowUploadInfoTaskList.map(c => c.fileID));
           }
           // uploadProgress.visible = false;
           // uploadProgress.value = 0;
         });
       }
-    }
-
-    // const h = props.uploadHandler ? props.uploadHandler : scxFSSUploadHandler;
-    // uploadProgress.visible = true
-    // scxFSSUploadHandler(needUploadFile, (v) => uploadProgress.value = v)
-    //     .then(d => {
-    //       proxyModelValue.value = d;
-    //     })
-    //     .catch(e => {
-    //       console.error(e);
-    //     })
-    //     .finally(() => {
-    //       uploadProgress.visible = false;
-    //       uploadProgress.value = 0;
-    //     });
-
-    function callSelectFile() {
-      hiddenInput.value.click();
     }
 
     function deleteImgFile(e) {
@@ -137,48 +143,28 @@ export default {
      * 重置 上传组件的值 保证即使点击重复文件也可以上传
      */
     function resetHiddenInputValue() {
-      hiddenInput.value.value = null;
-    }
 
-    function callDrop(e) {
-      e.preventDefault();
-      dragover.value = false;
-      const needUploadFile = e.dataTransfer.files[0];
-      callUploadHandler(needUploadFile);
-    }
-
-    function callDragover(e) {
-      e.preventDefault();
-      dragover.value = true;
-    }
-
-    function callDragleave(e) {
-      e.preventDefault();
-      dragover.value = false;
     }
 
     function onHiddenInputChange(e) {
-      const needUploadFiles = [];
-      for (let file of e.target.files) {
-        needUploadFiles.push(file);
-      }
-      resetHiddenInputValue();
-      //重置上传文件对象
+      const needUploadFiles = Array.from(e.target.files);
+      //重置 上传 input 的值 保证即使点击重复文件也可以上传
+      hiddenInputRef.value.value = null;
       callUploadHandler(needUploadFiles);
     }
 
     function onModelValueChange(fileIDs) {
 
-      updateFileInfo({
-        fileIDs,
-        onUpdate(f) {
-          fileInfo.previewUrl = f.previewUrl;
-          fileInfo.fileName = f.fileName;
-        },
-        onError(e) {
-          console.log(e);
-        }
-      });
+      // updateFileInfo({
+      //   fileIDs,
+      //   onUpdate(f) {
+      //     fileInfo.previewUrl = f.previewUrl;
+      //     fileInfo.fileName = f.fileName;
+      //   },
+      //   onError(e) {
+      //     console.log(e);
+      //   }
+      // });
     }
 
     function updateFileInfo({fileID, onUpdate, onError}) {
@@ -196,21 +182,44 @@ export default {
       });
     }
 
+    function remove(){
+
+    }
+
+    function groupItemDelete(index) {
+      uploadInfoList.value.splice(index, 1);
+    }
+
+    function moveUp(index) {
+      if (index - 1 >= 0) {
+        const temp = uploadInfoList.value[index];
+        uploadInfoList.value[index] = uploadInfoList.value[index - 1];
+        uploadInfoList.value[index - 1] = temp;
+      }
+    }
+
+    function moveDown(index) {
+      if (index + 1 <= uploadInfoList.value.length) {
+        const temp = uploadInfoList.value[index];
+        uploadInfoList.value[index] = uploadInfoList.value[index + 1];
+        uploadInfoList.value[index + 1] = temp;
+      }
+    }
+
 //我们根据 proxyModelValue 实时更新 fileInfo
     watch(proxyModelValue, (newVal) => onModelValueChange(newVal));
 
     return {
-      hiddenInput,
+      hiddenInputRef,
       proxyModelValue,
-      dragover,
-      uploadProgress,
-      fileInfoList,
-      callDragleave,
-      callDrop,
-      callDragover,
+      uploadInfoList,
       onHiddenInputChange,
-      callSelectFile,
-      deleteImgFile
+      selectFile,
+      deleteImgFile,
+      groupItemDelete,
+      moveDown,
+      moveUp,
+      s
     }
 
   }
