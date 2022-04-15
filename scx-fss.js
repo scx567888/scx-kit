@@ -31,7 +31,8 @@ class ScxFSS {
     maxUploadSize = 10 * 1024 * 1024 * 1024;//最大上传文件 写死 10GB
     chunkSize = 2 * 1024 * 1024;//切片大小 这里写死 2MB
     uploadURL = '/api/fss/upload'; //上传 url
-    listURL = '/api/fss/list'; // 列表 url
+    listInfoURL = '/api/fss/list-info'; // 列表信息 url
+    infoURL = '/api/fss/info'; // 信息 url
     rawURL = '/api/fss/raw/';//raw 的 url
     imageURL = '/api/fss/image/';//image 的 url
     downloadURL = '/api/fss/download/'; //download 的 url
@@ -77,6 +78,8 @@ class ScxFSS {
                 chunk: [],
                 md5: ''
             }
+            //不需要切割 (适用于文件大小 < 分块大小的情况, 因为比较常见 所以单独做处理)
+            const noNeedSlice = file.size <= chunkSize;
             //计算需要分块的数量
             const chunks = Math.ceil(file.size / chunkSize);
             //当前分块
@@ -109,15 +112,19 @@ class ScxFSS {
 
             //加载区块方法
             const loadNext = () => {
-                //获取起始位置字节数
-                const start = currentChunk * chunkSize;
-                //获取结束位置字节数
-                const end = Math.min(start + chunkSize, file.size);
-                //按照 分块的大小进行切割文件
-                const tempFileChunk = file.slice(start, end);
-                //将切割后的区块放入 fileInfo 对象的 chunk 中以便之后使用
+                let tempFileChunk;
+                if (noNeedSlice) { // 不切割
+                    tempFileChunk = file;
+                } else { // 按照 分块的大小进行切割文件
+                    // 获取起始位置字节数
+                    const start = currentChunk * chunkSize;
+                    // 获取结束位置字节数
+                    const end = Math.min(start + chunkSize, file.size);
+                    tempFileChunk = file.slice(start, end);
+                }
+                // 将切割后的区块放入 fileInfo 对象的 chunk 中以便之后使用
                 chunkAndMD5.chunk.push(tempFileChunk);
-                //读取 (这里起始就是走的 fileReader.onload 方法)
+                // 读取 (这里起始就是走的 fileReader.onload 方法)
                 fileReader.readAsArrayBuffer(tempFileChunk);
             }
 
@@ -209,14 +216,28 @@ class ScxFSS {
 
     /**
      *根据文件 id 获取文件基本信息
-     * @param fssObjectIDs s
+     * @param fssObjectID s
      * @returns {Promise<unknown>}
      */
-    info(fssObjectIDs) {
+    info(fssObjectID) {
         return new Promise((resolve, reject) => {
-            const ids = Array.isArray(fssObjectIDs) ? fssObjectIDs : [fssObjectIDs];
-            this.scxReq.post(this.listURL, {fssObjectIDs: ids}).then(data => {
-                const fssObjectList = data.items.map(i => new FSSObject(i));
+            this.scxReq.post(this.infoURL, {fssObjectID}).then(data => {
+                resolve(data ? new FSSObject(data) : null);
+            }).catch(e => {
+                reject(e)
+            });
+        });
+    };
+
+    /**
+     * a
+     * @param fssObjectIDs {Array} a
+     * @returns {Promise<unknown>} a
+     */
+    listInfo(fssObjectIDs) {
+        return new Promise((resolve, reject) => {
+            this.scxReq.post(this.listInfoURL, {fssObjectIDs}).then(data => {
+                const fssObjectList = data.map(i => new FSSObject(i));
                 resolve(fssObjectList);
             }).catch(e => {
                 reject(e)

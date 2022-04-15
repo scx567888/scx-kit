@@ -9,8 +9,8 @@ import 'tinymce/themes/silver'; // 编辑器主题 因为在此处已经引入�
 import 'tinymce/icons/default'; // 引入编辑器图标icon
 import 'tinymce/models/dom' //dom
 import 'tinymce/skins/ui/oxide/skin.css'; //编辑器 css
-import c from 'tinymce/skins/ui/oxide/content.css'; //编辑器内容区域的 css
-import c1 from 'tinymce/skins/content/default/content.css'; //编辑器内容区域的 css
+import c from 'tinymce/skins/ui/oxide/content.css?raw'; //编辑器内容区域的 css
+import c1 from 'tinymce/skins/content/default/content.css?raw'; //编辑器内容区域的 css
 //以下都是插件
 import 'tinymce/plugins/advlist'; //高级列表
 import 'tinymce/plugins/anchor'; //锚点

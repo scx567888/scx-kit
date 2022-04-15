@@ -43,19 +43,24 @@ const ScxRouter = createRouter({
             component: () => import('./views/scx-group-test.vue'),
         },
         {
-            path: '/listToTree-test',
-            name: 'listToTree-test',
-            component: () => import('./views/listToTree-test.vue'),
-        },
-        {
-            path: '/scx-fss-test',
-            name: 'scx-fss-test',
-            component: () => import('./views/scx-fss-test.vue'),
+            path: '/list-to-tree-test',
+            name: 'list-to-tree-test',
+            component: () => import('./views/list-to-tree-test.vue'),
         },
         {
             path: '/scx-tinymce-test',
             name: 'scx-tinymce-test',
             component: () => import('./views/scx-tinymce-test.vue'),
+        },
+        {
+            path: '/scx-upload-test',
+            name: 'scx-upload-test',
+            component: () => import('./views/scx-upload-test.vue'),
+        },
+        {
+            path: '/scx-upload-list-test',
+            name: 'scx-upload-list-test',
+            component: () => import('./views/scx-upload-list-test.vue'),
         },
     ]
 });

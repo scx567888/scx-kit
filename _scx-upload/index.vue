@@ -2,25 +2,29 @@
   <div class="scx-upload">
 
     <!-- 隐藏的 input 用于触发点击上传事件 -->
-    <input ref="hiddenInput" placeholder="file" style="display: none" type="file" @change="onHiddenInputChange"/>
+    <input ref="hiddenInputRef" placeholder="file" style="display: none" type="file" @change="onHiddenInputChange"/>
 
     <!-- 有文件时预览文件 -->
     <div v-if="proxyModelValue" class="preview">
       <!-- 有预览图时显示预览图 -->
-      <img v-if="fileInfo.previewUrl" :src="fileInfo.previewUrl" alt="img" class="preview-image">
+      <img v-if="uploadInfo.previewURL" :src="uploadInfo.previewURL" alt="img" class="preview-image">
       <!-- 没有预览图但是有文件名时显示文件名 -->
-      <span v-else-if="fileInfo.fileName" class="preview-text">{{ fileInfo.fileName }}</span>
+      <div v-else-if="uploadInfo.fileName" class="preview-text">
+        <div>{{ uploadInfo.fileName }}</div>
+      </div>
       <!-- 都没有时显示文件 id -->
-      <span v-else class="preview-text">{{ proxyModelValue }}</span>
+      <div v-else class="preview-text">
+        <div>{{ proxyModelValue }}</div>
+      </div>
       <!-- 操作项 -->
       <div class="operation">
-        <div class="operation-item" @click="downloadFile">
+        <div class="item-download" @click="downloadFile">
           下载
         </div>
-        <div class="operation-item" @click="selectFile">
+        <div class="item-replace" @click="selectFile">
           替换
         </div>
-        <div class="operation-item" @click="deleteFile">
+        <div class="item-delete" @click="deleteFile">
           删除
         </div>
       </div>
@@ -30,11 +34,25 @@
     <div v-else :class="dragover ?'dragover ':''" class="no-preview" @click="selectFile" @dragleave="callDragleave"
          @dragover="callDragover" @drop="callDrop">
       <scx-icon icon="outlined-plus-circle"/>
-      <span class="no-preview-text">支持拖拽</span>
+      <span>点击或拖拽</span>
     </div>
 
-    <!-- 以下为进度条 -->
-    <progress v-if="uploadProgress.visible" :max="100" :value="uploadProgress.value" class="progress"></progress>
+    <div v-if="uploadInfo.progressVisible" class="progress">
+      <div class="temp-file-name">
+        <div>
+          {{ uploadInfo.fileName }}
+        </div>
+      </div>
+      <div class="progress-state">
+        <div>
+          <div>{{ uploadInfo.progressState }}</div>
+          <div>{{ uploadInfo.progressValue }}%</div>
+        </div>
+        <!-- 以下为进度条 -->
+        <progress :max="100" :value="uploadInfo.progressValue"></progress>
+      </div>
+
+    </div>
 
   </div>
 </template>
@@ -45,6 +63,8 @@ import {computed, inject, reactive, ref, watch} from "vue";
 import {ScxIcon} from "../scx-icon.js";
 import {CHECKING_MD5, UPLOADING} from "../scx-fss.js";
 import {download} from "../vanilla-download.js";
+import {percentage} from "../vanilla-percentage.js";
+import {UploadInfo} from "./UploadInfo.js";
 
 export default {
   name: "scx-upload",
@@ -71,7 +91,11 @@ export default {
   },
   setup(props, ctx) {
 
-    const hiddenInput = ref(null);// 隐藏 input 的上传 id
+    /**
+     *  隐藏的 input 上传组件
+     *
+     */
+    const hiddenInputRef = ref(null);
 
     /**
      * 注入的 scx-fss
@@ -79,9 +103,11 @@ export default {
      */
     const scxFSS = inject("scx-fss", null);
 
-    const uploadProgress = reactive({visible: false, value: 70}); // 进度条参数
-
-    const proxyModelValue = computed({ //代理 modelValue
+    /**
+     * 代理 modelValue
+     * @type {WritableComputedRef<string>}
+     */
+    const proxyModelValue = computed({
       get() {
         return props.modelValue;
       },
@@ -90,15 +116,20 @@ export default {
       }
     });
 
-    const fileInfo = reactive({fileName: '未知文件', previewUrl: null, downloadUrl: null});
+    /**
+     * 上传信息
+     * @type {UnwrapNestedRefs<UploadInfo>}
+     */
+    const uploadInfo = reactive(new UploadInfo());
 
     //默认的 scx-fss 的上传 handler
     const scxFSSUploadHandler = (needUploadFile, progress) => new Promise((resolve, reject) => {
       scxFSS.upload(needUploadFile, (state, value) => {
+        //前 50% 是校验 md5 后 50% 才是真正的文件上传
         if (state === CHECKING_MD5) {
-          progress(value / 2);
+          progress(value * 0.5, "校验中");
         } else if (state === UPLOADING) {
-          progress(50 + value / 2);
+          progress(50 + value * 0.5, "上传中");
         }
       }).then(d => resolve(d.item.fssObjectID)).catch(e => reject(e));
     });
@@ -106,18 +137,17 @@ export default {
     //默认的 scx-fss 的 fileInfoHandler
     const scxFSSFileInfoHandler = (fileID, onUpdate, onError) => {
       if (!fileID) {
-        onUpdate({previewUrl: null, downloadUrl: null, fileName: null});
+        onUpdate({previewURL: null, downloadURL: null, fileName: null});
         return;
       }
-      const previewUrl = scxFSS.joinImageURL(fileID, {w: 150, h: 150});
-      const downloadUrl = scxFSS.joinDownloadURL(fileID);
-      onUpdate({previewUrl, downloadUrl});
-      scxFSS.info(fileID).then(d => {
-        const item = d[0];
+      const previewURL = scxFSS.joinImageURL(fileID, {w: 150, h: 150});
+      const downloadURL = scxFSS.joinDownloadURL(fileID);
+      onUpdate({previewURL, downloadURL});
+      scxFSS.info(fileID).then(item => {
         if (item) {
-          onUpdate({previewUrl, downloadUrl, fileName: d.fileName});
+          onUpdate({previewURL, downloadURL, fileName: item.fileName});
         } else {
-          onUpdate({previewUrl: null, downloadUrl: null, fileName: '文件无法读取 !!! id : ' + fileID});
+          onUpdate({previewURL: null, downloadURL: null, fileName: '文件无法读取 !!! id : ' + fileID});
         }
       }).catch(c => {
         onError(c)
@@ -133,30 +163,35 @@ export default {
         }
       }
       const h = props.uploadHandler ? props.uploadHandler : scxFSSUploadHandler;
-      uploadProgress.visible = true
-      h(needUploadFile, (v) => uploadProgress.value = v).then(d => {
+      uploadInfo.progressVisible = true;
+      uploadInfo.fileName = needUploadFile.name;
+      h(needUploadFile, (v, s = "上传中") => {
+        //处理一下百分比的格式防止  33.33333333333339 这种情况出现
+        uploadInfo.progressState = s;
+        uploadInfo.progressValue = percentage(v, 100);
+      }).then(d => {
         proxyModelValue.value = d;
       }).catch(e => {
         console.error(e);
       }).finally(() => {
-        uploadProgress.visible = false;
-        uploadProgress.value = 0;
+        uploadInfo.progressVisible = false;
+        uploadInfo.progressValue = 0;
       });
     }
 
     function callFileInfoHandler(fileID) {
       const h = props.fileInfoHandler ? props.fileInfoHandler : scxFSSFileInfoHandler;
       h(fileID, (f) => {
-        fileInfo.previewUrl = f.previewUrl;
-        fileInfo.fileName = f.fileName;
-        fileInfo.downloadUrl = f.downloadUrl;
+        uploadInfo.fileName = f.fileName;
+        uploadInfo.previewURL = f.previewURL;
+        uploadInfo.downloadURL = f.downloadURL;
       }, (e) => {
         console.log(e);
       });
     }
 
     function selectFile() {
-      hiddenInput.value.click();
+      hiddenInputRef.value.click();
     }
 
     function deleteFile() {
@@ -164,11 +199,11 @@ export default {
     }
 
     function downloadFile() {
-      if (fileInfo && fileInfo.downloadUrl) {
-        if (fileInfo.fileName) {
-          download(fileInfo.downloadUrl, fileInfo.fileName);
+      if (uploadInfo && uploadInfo.downloadURL) {
+        if (uploadInfo.fileName) {
+          download(uploadInfo.downloadURL, uploadInfo.fileName);
         } else {
-          download(fileInfo.downloadUrl);
+          download(uploadInfo.downloadURL);
         }
       }
     }
@@ -176,7 +211,7 @@ export default {
     function onHiddenInputChange(e) {
       const needUploadFile = e.target.files[0];
       //重置 上传 input 的值 保证即使点击重复文件也可以上传
-      hiddenInput.value.value = null;
+      hiddenInputRef.value.value = null;
       callUploadHandler(needUploadFile);
     }
 
@@ -204,10 +239,9 @@ export default {
     }
 
     return {
-      hiddenInput,
+      hiddenInputRef,
       proxyModelValue,
-      uploadProgress,
-      fileInfo,
+      uploadInfo,
       dragover,
       onHiddenInputChange,
       selectFile,

@@ -1,0 +1,8 @@
+.scx-upload-list{
+    position: relative;
+}
+
+.scx-upload-list > .item{
+    position: relative;
+    border: 1px solid blue;
+}
