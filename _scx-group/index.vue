@@ -5,17 +5,17 @@
       <div v-for="(item,i) in list" :key="item" class="scx-group-item">
         <slot :index="i" :item="item"></slot>
         <div class="scx-group-item-operation">
-          <div v-if="showMoveUp(i)" @click="groupItemMoveUp(i)" class="scx-group-item-move-up-button">
+          <div v-if="showMoveUp(i)" class="scx-group-item-move-up-button" @click="groupItemMoveUp(i)">
             <slot name="moveUpButton">
               <button>↑</button>
             </slot>
           </div>
-          <div v-if="showMoveDown(i)" @click="groupItemMoveDown(i)" class="scx-group-item-move-down-button">
+          <div v-if="showMoveDown(i)" class="scx-group-item-move-down-button" @click="groupItemMoveDown(i)">
             <slot name="moveDownButton">
               <button>↓</button>
             </slot>
           </div>
-          <div @click="groupItemRemove(i)" class="scx-group-item-remove-button">
+          <div class="scx-group-item-remove-button" @click="groupItemRemove(i)">
             <slot name="removeButton">
               <button>X</button>
             </slot>
