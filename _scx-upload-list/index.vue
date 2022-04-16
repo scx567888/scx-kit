@@ -28,6 +28,7 @@ import {ScxIcon} from "../scx-icon.js";
 import {CHECKING_MD5, UPLOADING} from "../scx-fss.js";
 import {UploadInfo} from "../_scx-upload/UploadInfo.js";
 import ScxGroup from "../_scx-group/index.vue";
+import {arrayEquals} from "../vanilla-array-utils.js";
 
 export default {
   name: "scx-upload-list",
@@ -146,20 +147,14 @@ export default {
       return l.map(d => d.fileID).filter(d => d);
     }
 
-    watch(uploadInfoList, (newVal, oldVal) => {
-      proxyModelValue.value = getFileIDs(newVal);
-    }, {deep: true});
-
     watch(proxyModelValue, (newVal, oldVal) => {
-      const newValStr = JSON.stringify(newVal);
-      const fileIDsStr = JSON.stringify(getFileIDs(uploadInfoList.value));
-      if (newValStr !== fileIDsStr) {
-        console.log("proxyModelValue　被外部修改了", newValStr, fileIDsStr);
-        uploadInfoList.value = [];
+      if (!arrayEquals(newVal, getFileIDs(uploadInfoList.value))) {
+        console.log("外部发生变化 !!!");
+        const tempList = [];
         for (let fileID of newVal) {
           const u = reactive(new UploadInfo());
-          uploadInfoList.value.push(u);
           u.fileID = fileID;
+          tempList.push(u);
           updateFileInfo(u.fileID).then(item => {
             const {fileName, previewURL, downloadURL} = item;
             u.fileName = fileName;
@@ -170,8 +165,17 @@ export default {
             u.progressValue = 0;
           });
         }
+        uploadInfoList.value = tempList;
       }
     }, {immediate: true});
+
+    watch(uploadInfoList, (newVal, oldVal) => {
+      const fileIDs = getFileIDs(newVal);
+      if (!arrayEquals(fileIDs, proxyModelValue.value)) {
+        console.log("内部发生变化 !!!");
+        proxyModelValue.value = fileIDs;
+      }
+    }, {deep: true});
 
     return {
       hiddenInputRef,
