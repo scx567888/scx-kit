@@ -45,6 +45,10 @@ export default {
       type: Function,
       default: null
     },
+    fileInfoHandler: {
+      type: Function,
+      default: null
+    },
     beforeUpload: {
       type: Function,
       default: null
@@ -100,6 +104,12 @@ export default {
 
     //上传文件
     async function callUploadHandler(needUploadFiles) {
+      if (props.beforeUpload) {
+        const result = props.beforeUpload(needUploadFiles);
+        if (!result) {
+          return;
+        }
+      }
       for (const needUploadFile of needUploadFiles) {
         const i = new UploadInfo();
         i.fileName = needUploadFile.name;
@@ -111,11 +121,13 @@ export default {
       }
       const uu = uploadInfoList.value.filter(u => u.progressState === "等待上传中...");
       for (let u of uu) {
-        u.fileID = await scxFSSUploadHandler(u.file, (v, s = "上传中") => {
+        const uploadHandler = props.uploadHandler ? props.uploadHandler : scxFSSUploadHandler;
+        const fileInfoHandler = props.fileInfoHandler ? props.fileInfoHandler : scxFSSFileInfoHandler;
+        u.fileID = await uploadHandler(u.file, (v, s = "上传中") => {
           u.progressValue = v;
           u.progressState = s;
         });
-        const {fileName, previewURL, downloadURL} = await updateFileInfo(u.fileID);
+        const {fileName, previewURL, downloadURL} = await fileInfoHandler(u.fileID);
         u.fileName = fileName;
         u.previewURL = previewURL;
         u.downloadURL = downloadURL;
@@ -132,7 +144,7 @@ export default {
       callUploadHandler(needUploadFiles);
     }
 
-    async function updateFileInfo(fileID) {
+    async function scxFSSFileInfoHandler(fileID) {
       const previewURL = scxFSS.joinImageURL(fileID, {w: 150, h: 150});
       const downloadURL = scxFSS.joinDownloadURL(fileID);
       const item = await scxFSS.info(fileID);
@@ -147,15 +159,16 @@ export default {
       return l.map(d => d.fileID).filter(d => d);
     }
 
-    watch(proxyModelValue, (newVal, oldVal) => {
-      if (!arrayEquals(newVal, getFileIDs(uploadInfoList.value))) {
+    function callFileInfoHandler(fileIDs){
+      if (!arrayEquals(fileIDs, getFileIDs(uploadInfoList.value))) {
         console.log("外部发生变化 !!!");
         const tempList = [];
-        for (let fileID of newVal) {
+        for (let fileID of fileIDs) {
           const u = reactive(new UploadInfo());
           u.fileID = fileID;
           tempList.push(u);
-          updateFileInfo(u.fileID).then(item => {
+          const fileInfoHandler = props.fileInfoHandler ? props.fileInfoHandler : scxFSSFileInfoHandler;
+          fileInfoHandler(u.fileID).then(item => {
             const {fileName, previewURL, downloadURL} = item;
             u.fileName = fileName;
             u.previewURL = previewURL;
@@ -167,7 +180,10 @@ export default {
         }
         uploadInfoList.value = tempList;
       }
-    }, {immediate: true});
+    }
+
+    //我们根据 proxyModelValue 实时更新 fileInfo
+    watch(proxyModelValue, (newVal) => callFileInfoHandler(newVal), {immediate: true});
 
     watch(uploadInfoList, (newVal, oldVal) => {
       const fileIDs = getFileIDs(newVal);

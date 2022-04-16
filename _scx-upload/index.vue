@@ -135,24 +135,16 @@ export default {
     });
 
     //默认的 scx-fss 的 fileInfoHandler
-    const scxFSSFileInfoHandler = (fileID, onUpdate, onError) => {
-      if (!fileID) {
-        onUpdate({previewURL: null, downloadURL: null, fileName: null});
-        return;
-      }
+    async function scxFSSFileInfoHandler(fileID) {
       const previewURL = scxFSS.joinImageURL(fileID, {w: 150, h: 150});
       const downloadURL = scxFSS.joinDownloadURL(fileID);
-      onUpdate({previewURL, downloadURL});
-      scxFSS.info(fileID).then(item => {
-        if (item) {
-          onUpdate({previewURL, downloadURL, fileName: item.fileName});
-        } else {
-          onUpdate({previewURL: null, downloadURL: null, fileName: '文件无法读取 !!! id : ' + fileID});
-        }
-      }).catch(c => {
-        onError(c)
-      });
-    };
+      const item = await scxFSS.info(fileID);
+      if (item) {
+        return {previewURL, downloadURL, fileName: item.fileName};
+      } else {
+        return {previewURL: null, downloadURL: null, fileName: '文件无法读取 !!! id : ' + fileID};
+      }
+    }
 
     //上传文件
     function callUploadHandler(needUploadFile) {
@@ -162,10 +154,10 @@ export default {
           return;
         }
       }
-      const h = props.uploadHandler ? props.uploadHandler : scxFSSUploadHandler;
+      const uploadHandler = props.uploadHandler ? props.uploadHandler : scxFSSUploadHandler;
       uploadInfo.progressVisible = true;
       uploadInfo.fileName = needUploadFile.name;
-      h(needUploadFile, (v, s = "上传中") => {
+      uploadHandler(needUploadFile, (v, s = "上传中") => {
         //处理一下百分比的格式防止  33.33333333333339 这种情况出现
         uploadInfo.progressState = s;
         uploadInfo.progressValue = percentage(v, 100);
@@ -180,13 +172,18 @@ export default {
     }
 
     function callFileInfoHandler(fileID) {
-      const h = props.fileInfoHandler ? props.fileInfoHandler : scxFSSFileInfoHandler;
-      h(fileID, (f) => {
-        uploadInfo.fileName = f.fileName;
-        uploadInfo.previewURL = f.previewURL;
-        uploadInfo.downloadURL = f.downloadURL;
-      }, (e) => {
-        console.log(e);
+      if (fileID === null) {
+        uploadInfo.fileName = null;
+        uploadInfo.previewURL = null;
+        uploadInfo.downloadURL = null;
+        return;
+      }
+      const fileInfoHandler = props.fileInfoHandler ? props.fileInfoHandler : scxFSSFileInfoHandler;
+      fileInfoHandler(fileID).then(item => {
+        const {fileName, previewURL, downloadURL} = item;
+        uploadInfo.fileName = fileName;
+        uploadInfo.previewURL = previewURL;
+        uploadInfo.downloadURL = downloadURL;
       });
     }
 
