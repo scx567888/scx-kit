@@ -43,12 +43,12 @@
 /*以下为 vue 动画*/
 .scx-group-list-enter-from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: scale(0.98);
 }
 
 .scx-group-list-leave-to {
     opacity: 0;
-    transform: translateY(-30px);
+    transform: scale(0.98);
 }
 
 /* 重要 !!!!!  避免嵌套动画延迟 */
