@@ -2,38 +2,37 @@
   <div class="scx-upload-list">
 
     <!-- 隐藏的 input 用于触发点击上传事件 -->
-    <input ref="hiddenInputRef" multiple placeholder="file" style="display: none" type="file" @change="onHiddenInputChange">
+    <input ref="hiddenInputRef" multiple placeholder="file" style="display: none" type="file"
+           @change="onHiddenInputChange">
 
     <!-- 上传按钮 -->
     <button @click="selectFile">点击上传</button>
 
-    <!-- 删除按钮 -->
-    <div v-for="(uploadInfo,i) in uploadInfoList" class="item">
-      {{ uploadInfo }}
-      <progress v-if="uploadInfo.progressState" :max="100" :value="uploadInfo.progressValue" class="progress"></progress>
-      <div style="position: absolute;top: 0;right: 0;">
-        <button v-if="i>0" @click="moveUp(i)">↑</button>
-        <button v-if="i<uploadInfoList.length-1" @click="moveDown(i)">↓</button>
-        <button @click="groupItemDelete(i)">X</button>
-      </div>
-    </div>
-
-    {{s}}
+    <scx-group v-model="uploadInfoList">
+      <template #default="{index,item}">
+        <div class="scx-upload-list-item">
+          <img :src="item.previewURL" alt="img" class="preview-image">
+          <a :href="item.downloadURL">{{ item.fileName }}</a>
+          <progress v-if="item.progressVisible" :max="100" :value="item.progressValue" class="progress"></progress>
+        </div>
+      </template>
+    </scx-group>
 
   </div>
 </template>
 
 <script>
 import './index.css'
-import {computed, inject, ref, watch} from "vue";
+import {computed, inject, reactive, ref, watch} from "vue";
 import {ScxIcon} from "../scx-icon.js";
 import {CHECKING_MD5, UPLOADING} from "../scx-fss.js";
 import {UploadInfo} from "../_scx-upload/UploadInfo.js";
-import { insertItem} from "../vanilla-array-utils.js";
+import ScxGroup from "../_scx-group/index.vue";
 
 export default {
   name: "scx-upload-list",
   components: {
+    ScxGroup,
     ScxIcon
   },
   props: {
@@ -51,9 +50,7 @@ export default {
     }
   },
   setup(props, ctx) {
-    const s = [1, 2, 3];
-    insertItem(s,1,999,888);
-    console.log(s)
+
     /**
      *  隐藏的 input 上传组件
      *
@@ -84,7 +81,7 @@ export default {
     });
 
     /**
-     * 上传信息列表
+     * 已上传的信息列表
      * @type {Ref<UnwrapRef<UploadInfo[]>>}
      */
     const uploadInfoList = ref([]);
@@ -101,49 +98,30 @@ export default {
     });
 
     //上传文件
-    function callUploadHandler(needUploadFiles) {
+    async function callUploadHandler(needUploadFiles) {
       for (const needUploadFile of needUploadFiles) {
-        const u = new UploadInfo();
-        u.fileName = needUploadFile.name;
-        u.file = needUploadFile;
-        u.progressState = "等待上传中...";
-        u.progressVisible = true;
-        u.progressValue = 0;
-        uploadInfoList.value.push(u);
+        const i = new UploadInfo();
+        i.fileName = needUploadFile.name;
+        i.file = needUploadFile;
+        i.progressState = "等待上传中...";
+        i.progressVisible = true;
+        i.progressValue = 0;
+        uploadInfoList.value.push(i);
       }
       const uu = uploadInfoList.value.filter(u => u.progressState === "等待上传中...");
-      let ul = uu.length;
       for (let u of uu) {
-        scxFSSUploadHandler(u.file, (v, s = "上传中") => {
+        u.fileID = await scxFSSUploadHandler(u.file, (v, s = "上传中") => {
           u.progressValue = v;
           u.progressState = s;
-        }).then(d => {
-          u.fileID = d;
-        }).catch(e => {
-          console.error(e);
-        }).finally(() => {
-          u.file = null;
-          ul = ul - 1;
-          if (ul === 0) {
-            alert("全部上传完毕");
-            // proxyModelValue.value.push(...nowUploadInfoTaskList.map(c => c.fileID));
-          }
-          // uploadProgress.visible = false;
-          // uploadProgress.value = 0;
         });
+        const {fileName, previewURL, downloadURL} = await updateFileInfo(u.fileID);
+        u.fileName = fileName;
+        u.previewURL = previewURL;
+        u.downloadURL = downloadURL;
+        u.file = null;
+        u.progressVisible = false;
+        u.progressValue = 0;
       }
-    }
-
-    function deleteImgFile(e) {
-      e.stopPropagation();
-      proxyModelValue.value = null;
-    }
-
-    /**
-     * 重置 上传组件的值 保证即使点击重复文件也可以上传
-     */
-    function resetHiddenInputValue() {
-
     }
 
     function onHiddenInputChange(e) {
@@ -153,73 +131,53 @@ export default {
       callUploadHandler(needUploadFiles);
     }
 
-    function onModelValueChange(fileIDs) {
-
-      // updateFileInfo({
-      //   fileIDs,
-      //   onUpdate(f) {
-      //     fileInfo.previewUrl = f.previewUrl;
-      //     fileInfo.fileName = f.fileName;
-      //   },
-      //   onError(e) {
-      //     console.log(e);
-      //   }
-      // });
-    }
-
-    function updateFileInfo({fileID, onUpdate, onError}) {
-      if (!fileID) {
-        onUpdate({previewUrl: null, fileName: null});
-        return;
-      }
-      const previewUrl = scxFSS.joinImageURL(fileID, {w: 150, h: 150});
-      onUpdate({previewUrl: previewUrl});
-      scxFSS.getFSSObject([fileID]).then(d => {
-        const item = d[0];
-        onUpdate({previewUrl: previewUrl, fileName: item.fileName})
-      }).catch(c => {
-        onError(c)
-      });
-    }
-
-    function remove(){
-
-    }
-
-    function groupItemDelete(index) {
-      uploadInfoList.value.splice(index, 1);
-    }
-
-    function moveUp(index) {
-      if (index - 1 >= 0) {
-        const temp = uploadInfoList.value[index];
-        uploadInfoList.value[index] = uploadInfoList.value[index - 1];
-        uploadInfoList.value[index - 1] = temp;
+    async function updateFileInfo(fileID) {
+      const previewURL = scxFSS.joinImageURL(fileID, {w: 150, h: 150});
+      const downloadURL = scxFSS.joinDownloadURL(fileID);
+      const item = await scxFSS.info(fileID);
+      if (item) {
+        return {previewURL, downloadURL, fileName: item.fileName};
+      } else {
+        return {previewURL: null, downloadURL: null, fileName: '文件无法读取 !!! id : ' + fileID};
       }
     }
 
-    function moveDown(index) {
-      if (index + 1 <= uploadInfoList.value.length) {
-        const temp = uploadInfoList.value[index];
-        uploadInfoList.value[index] = uploadInfoList.value[index + 1];
-        uploadInfoList.value[index + 1] = temp;
-      }
+    function getFileIDs(l) {
+      return l.map(d => d.fileID).filter(d => d);
     }
 
-//我们根据 proxyModelValue 实时更新 fileInfo
-    watch(proxyModelValue, (newVal) => onModelValueChange(newVal));
+    watch(uploadInfoList, (newVal, oldVal) => {
+      proxyModelValue.value = getFileIDs(newVal);
+    }, {deep: true});
+
+    watch(proxyModelValue, (newVal, oldVal) => {
+      const newValStr = JSON.stringify(newVal);
+      const fileIDsStr = JSON.stringify(getFileIDs(uploadInfoList.value));
+      if (newValStr !== fileIDsStr) {
+        console.log("proxyModelValue　被外部修改了", newValStr, fileIDsStr);
+        uploadInfoList.value = [];
+        for (let fileID of newVal) {
+          const u = reactive(new UploadInfo());
+          uploadInfoList.value.push(u);
+          u.fileID = fileID;
+          updateFileInfo(u.fileID).then(item => {
+            const {fileName, previewURL, downloadURL} = item;
+            u.fileName = fileName;
+            u.previewURL = previewURL;
+            u.downloadURL = downloadURL;
+            u.file = null;
+            u.progressVisible = false;
+            u.progressValue = 0;
+          });
+        }
+      }
+    }, {immediate: true});
 
     return {
       hiddenInputRef,
-      proxyModelValue,
       uploadInfoList,
       onHiddenInputChange,
       selectFile,
-      deleteImgFile,
-      groupItemDelete,
-      moveDown,
-      moveUp,
-      s
     }
 
   }

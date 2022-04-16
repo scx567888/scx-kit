@@ -1,8 +1,22 @@
-.scx-upload-list{
+.scx-upload-list {
     position: relative;
 }
 
-.scx-upload-list > .item{
+.scx-upload-list > .scx-group {
+    border: 1px solid red;
+}
+
+.scx-upload-list > .item {
     position: relative;
     border: 1px solid blue;
+
+}
+
+.scx-upload-list .scx-upload-list-item{
+    height: 50px;
+}
+
+.scx-upload-list .preview-image{
+    height: 30px;
+    width: 30px;
 }
