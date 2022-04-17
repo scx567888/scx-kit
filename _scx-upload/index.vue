@@ -94,6 +94,14 @@ export default {
 
     const scxFSSHelper = new ScxFSSHelper(scxFSS);
 
+    function getFileInfoHandler() {
+      return props.fileInfoHandler ? props.fileInfoHandler : (fileID) => scxFSSHelper.fileInfoHandler(fileID);
+    }
+
+    function getUploadHandler() {
+      return props.uploadHandler ? props.uploadHandler : (needUploadFile, progress) => scxFSSHelper.uploadHandler(needUploadFile, progress);
+    }
+
     const hiddenInputRef = ref(null);
 
     function selectFile() {
@@ -116,35 +124,8 @@ export default {
       }
     });
 
-    const dragover = ref(false);
-
-    function callDrop(e) {
-      e.preventDefault();
-      dragover.value = false;
-      const needUploadFile = e.dataTransfer.files[0];
-      callUploadHandler(needUploadFile);
-    }
-
-    function callDragover(e) {
-      e.preventDefault();
-      dragover.value = true;
-    }
-
-    function callDragleave(e) {
-      e.preventDefault();
-      dragover.value = false;
-    }
-
     function deleteFile() {
       proxyModelValue.value = null;
-    }
-
-    function getFileInfoHandler() {
-      return props.fileInfoHandler ? props.fileInfoHandler : (fileID) => scxFSSHelper.fileInfoHandler(fileID);
-    }
-
-    function getUploadHandler() {
-      return props.uploadHandler ? props.uploadHandler : (needUploadFile, progress) => scxFSSHelper.uploadHandler(needUploadFile, progress);
     }
 
     const uploadInfo = reactive(new UploadInfo());
@@ -196,6 +177,25 @@ export default {
 
     //我们根据 proxyModelValue 实时更新 fileInfo
     watch(proxyModelValue, (newVal) => callFileInfoHandler(newVal), {immediate: true});
+
+    const dragover = ref(false);
+
+    function callDrop(e) {
+      e.preventDefault();
+      dragover.value = false;
+      const needUploadFile = e.dataTransfer.files[0];
+      callUploadHandler(needUploadFile);
+    }
+
+    function callDragover(e) {
+      e.preventDefault();
+      dragover.value = true;
+    }
+
+    function callDragleave(e) {
+      e.preventDefault();
+      dragover.value = false;
+    }
 
     return {
       hiddenInputRef,
