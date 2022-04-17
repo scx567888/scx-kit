@@ -1,8 +1,74 @@
-.scx-upload-list{
-    position: relative;
+.scx-upload-list > .scx-group {
+    padding: 0;
 }
 
-.scx-upload-list > .item{
+.scx-upload-list .scx-group-item {
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #3a8ee6;
+    padding: 5px;
+}
+
+.scx-upload-list .scx-group-item:hover {
+    background-color: rgba(24, 144, 255, 0.2);
+}
+
+.scx-upload-list .scx-group-item-operation {
+    top: 2px;
+    right: 2px;
+}
+
+.scx-upload-list .upload-button {
+    align-self: start;
+}
+
+.scx-upload-list .preview-item {
+    height: 60px;
+    display: flex;
+    column-gap: 10px;
+    width: 100%;
+}
+
+.scx-upload-list .preview-image {
+    height: 60px;
+    width: 60px;
+    flex-shrink: 0;
+    border: 1px solid #3a8ee6;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.scx-upload-list .preview-text {
+    display: flex;
     position: relative;
-    border: 1px solid blue;
+    width: 100%;
+    justify-content: space-between;
+    flex-direction: column;
+}
+
+.scx-upload-list .progress-state {
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
+    width: 100%;
+}
+
+.scx-upload-list .progress-state > div {
+    display: flex;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.scx-upload-list .progress-state > progress {
+    width: 100%;
+}
+
+.scx-upload-list .item-info {
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    color: rgb(61, 61, 61);
+    width: 100%;
 }

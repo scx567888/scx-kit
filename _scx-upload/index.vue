@@ -61,10 +61,9 @@
 import './index.css'
 import {computed, inject, reactive, ref, watch} from "vue";
 import {ScxIcon} from "../scx-icon.js";
-import {CHECKING_MD5, UPLOADING} from "../scx-fss.js";
 import {download} from "../vanilla-download.js";
 import {percentage} from "../vanilla-percentage.js";
-import {UploadInfo} from "./UploadInfo.js";
+import {ScxFSSHelper, UploadInfo} from "./helper.js";
 
 export default {
   name: "scx-upload",
@@ -91,22 +90,31 @@ export default {
   },
   setup(props, ctx) {
 
-    /**
-     *  隐藏的 input 上传组件
-     *
-     */
-    const hiddenInputRef = ref(null);
-
-    /**
-     * 注入的 scx-fss
-     * @type {ScxFSS}
-     */
     const scxFSS = inject("scx-fss", null);
 
-    /**
-     * 代理 modelValue
-     * @type {WritableComputedRef<string>}
-     */
+    const scxFSSHelper = new ScxFSSHelper(scxFSS);
+
+    function getFileInfoHandler() {
+      return props.fileInfoHandler ? props.fileInfoHandler : (fileID) => scxFSSHelper.fileInfoHandler(fileID);
+    }
+
+    function getUploadHandler() {
+      return props.uploadHandler ? props.uploadHandler : (needUploadFile, progress) => scxFSSHelper.uploadHandler(needUploadFile, progress);
+    }
+
+    const hiddenInputRef = ref(null);
+
+    function selectFile() {
+      hiddenInputRef.value.click();
+    }
+
+    function onHiddenInputChange(e) {
+      const needUploadFile = e.target.files[0];
+      //重置 上传 input 的值 保证即使点击重复文件也可以上传
+      hiddenInputRef.value.value = null;
+      callUploadHandler(needUploadFile);
+    }
+
     const proxyModelValue = computed({
       get() {
         return props.modelValue;
@@ -116,87 +124,11 @@ export default {
       }
     });
 
-    /**
-     * 上传信息
-     * @type {UnwrapNestedRefs<UploadInfo>}
-     */
-    const uploadInfo = reactive(new UploadInfo());
-
-    //默认的 scx-fss 的上传 handler
-    const scxFSSUploadHandler = (needUploadFile, progress) => new Promise((resolve, reject) => {
-      scxFSS.upload(needUploadFile, (state, value) => {
-        //前 50% 是校验 md5 后 50% 才是真正的文件上传
-        if (state === CHECKING_MD5) {
-          progress(value * 0.5, "校验中");
-        } else if (state === UPLOADING) {
-          progress(50 + value * 0.5, "上传中");
-        }
-      }).then(d => resolve(d.item.fssObjectID)).catch(e => reject(e));
-    });
-
-    //默认的 scx-fss 的 fileInfoHandler
-    const scxFSSFileInfoHandler = (fileID, onUpdate, onError) => {
-      if (!fileID) {
-        onUpdate({previewURL: null, downloadURL: null, fileName: null});
-        return;
-      }
-      const previewURL = scxFSS.joinImageURL(fileID, {w: 150, h: 150});
-      const downloadURL = scxFSS.joinDownloadURL(fileID);
-      onUpdate({previewURL, downloadURL});
-      scxFSS.info(fileID).then(item => {
-        if (item) {
-          onUpdate({previewURL, downloadURL, fileName: item.fileName});
-        } else {
-          onUpdate({previewURL: null, downloadURL: null, fileName: '文件无法读取 !!! id : ' + fileID});
-        }
-      }).catch(c => {
-        onError(c)
-      });
-    };
-
-    //上传文件
-    function callUploadHandler(needUploadFile) {
-      if (props.beforeUpload) {
-        const result = props.beforeUpload(needUploadFile);
-        if (!result) {
-          return;
-        }
-      }
-      const h = props.uploadHandler ? props.uploadHandler : scxFSSUploadHandler;
-      uploadInfo.progressVisible = true;
-      uploadInfo.fileName = needUploadFile.name;
-      h(needUploadFile, (v, s = "上传中") => {
-        //处理一下百分比的格式防止  33.33333333333339 这种情况出现
-        uploadInfo.progressState = s;
-        uploadInfo.progressValue = percentage(v, 100);
-      }).then(d => {
-        proxyModelValue.value = d;
-      }).catch(e => {
-        console.error(e);
-      }).finally(() => {
-        uploadInfo.progressVisible = false;
-        uploadInfo.progressValue = 0;
-      });
-    }
-
-    function callFileInfoHandler(fileID) {
-      const h = props.fileInfoHandler ? props.fileInfoHandler : scxFSSFileInfoHandler;
-      h(fileID, (f) => {
-        uploadInfo.fileName = f.fileName;
-        uploadInfo.previewURL = f.previewURL;
-        uploadInfo.downloadURL = f.downloadURL;
-      }, (e) => {
-        console.log(e);
-      });
-    }
-
-    function selectFile() {
-      hiddenInputRef.value.click();
-    }
-
     function deleteFile() {
       proxyModelValue.value = null;
     }
+
+    const uploadInfo = reactive(new UploadInfo());
 
     function downloadFile() {
       if (uploadInfo && uploadInfo.downloadURL) {
@@ -208,17 +140,44 @@ export default {
       }
     }
 
-    function onHiddenInputChange(e) {
-      const needUploadFile = e.target.files[0];
-      //重置 上传 input 的值 保证即使点击重复文件也可以上传
-      hiddenInputRef.value.value = null;
-      callUploadHandler(needUploadFile);
+    function callUploadHandler(needUploadFile) {
+      if (props.beforeUpload) {
+        const result = props.beforeUpload(needUploadFile);
+        if (!result) {
+          return;
+        }
+      }
+      //设定初始值
+      uploadInfo.progressVisible = true;
+      uploadInfo.fileName = needUploadFile.name;
+      //上传回调函数
+      const progress = (v, s = "上传中") => {
+        //处理一下百分比的格式防止  33.33333333333339 这种情况出现
+        uploadInfo.progressState = s;
+        uploadInfo.progressValue = percentage(v, 100);
+      }
+      //开始上传
+      getUploadHandler()(needUploadFile, progress).then(d => {
+        proxyModelValue.value = d;
+      }).catch(e => {
+        console.error(e);
+      }).finally(() => {
+        uploadInfo.progressVisible = false;
+        uploadInfo.progressValue = 0;
+      });
+    }
+
+    function callFileInfoHandler(fileID) {
+      if (fileID === null) {
+        uploadInfo.reset();
+        return;
+      }
+      getFileInfoHandler()(fileID).then(item => uploadInfo.fill(item));
     }
 
     //我们根据 proxyModelValue 实时更新 fileInfo
     watch(proxyModelValue, (newVal) => callFileInfoHandler(newVal), {immediate: true});
 
-    //拖拽状态
     const dragover = ref(false);
 
     function callDrop(e) {

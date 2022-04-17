@@ -1,10 +1,8 @@
 <template>
-  <scx-upload-list v-model="nowFiles" />
+  <scx-upload-list v-model="nowFiles" :before-upload="b"/>
   <br>
   <scx-upload-list v-model="nowFiles"/>
-  <br>
-  <input v-model="nowFiles">
-  {{nowFiles}}
+  {{ nowFiles }}
 
 </template>
 
@@ -14,14 +12,15 @@ import ScxUploadList from "../../../_scx-upload-list/index.vue";
 
 const nowFiles = ref([]);
 
-function b(file) {
-  const arr = file.name.split(".");
-  const extName = arr[arr.length - 1];
-  if (extName === 'jpg' || extName === 'jpeg' || extName === 'png') {
-    return true;
-  } else {
-    alert("文件必须是图片")
-    return false;
+function b(files) {
+  for (let file of files) {
+    const arr = file.name.split(".");
+    const extName = arr[arr.length - 1];
+    if (extName !== 'jpg' && extName !== 'jpeg' && extName !== 'png') {
+      alert("文件必须是图片")
+      return false;
+    }
   }
+  return true;
 }
 </script>
