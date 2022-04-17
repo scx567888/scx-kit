@@ -5,11 +5,12 @@ import {
     ScxGroup,
     ScxIcon,
     ScxTinymce,
-    ScxUpload
+    ScxUpload,
+    ScxUploadList
 } from './scx-kit.js';
 
 //以下为组件
-const components = [ScxIcon, ScxCrud, ScxGroup, ScxUpload, ScxTinymce];
+const components = [ScxIcon, ScxCrud, ScxGroup, ScxUpload, ScxUploadList, ScxTinymce];
 
 //以下为指令
 const directives = [ScxContextMenuDirective, ScxDragDirective];

@@ -37,7 +37,7 @@ import './index.css'
 import {computed, inject, reactive, ref, watch} from "vue";
 import {ScxIcon} from "../scx-icon.js";
 import {ScxFSSHelper, UploadInfo} from "../_scx-upload/helper.js";
-import ScxGroup from "../_scx-group/index.vue";
+import {ScxGroup} from "../scx-group.js";
 import {arrayEquals} from "../vanilla-array-utils.js";
 
 export default {
