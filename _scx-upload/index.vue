@@ -60,7 +60,7 @@
 <script>
 import './index.css'
 import {computed, inject, reactive, ref, watch} from "vue";
-import {ScxIcon} from "../scx-icon.js";
+import ScxIcon from "../_scx-icon/index.vue";
 import {download} from "../vanilla-download.js";
 import {percentage} from "../vanilla-percentage.js";
 import {ScxFSSHelper, UploadInfo} from "./helper.js";

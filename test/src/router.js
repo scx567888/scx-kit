@@ -48,11 +48,6 @@ const ScxRouter = createRouter({
             component: () => import('./views/list-to-tree-test.vue'),
         },
         {
-            path: '/scx-tinymce-test',
-            name: 'scx-tinymce-test',
-            component: () => import('./views/scx-tinymce-test.vue'),
-        },
-        {
             path: '/scx-upload-test',
             name: 'scx-upload-test',
             component: () => import('./views/scx-upload-test.vue'),

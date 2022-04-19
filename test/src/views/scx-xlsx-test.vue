@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import {exportExcel} from "../../../scx-kit.js";
+import {exportExcel} from "../../../index.js";
 
 export default {
   name: "scx-xlsx-test",

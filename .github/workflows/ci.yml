@@ -18,7 +18,7 @@ jobs:
         run: npm install
 
       - name: 使用 npm 进行构建和测试
-        run: npm run build
+        run: npm run build:test
 
       - name: 上传 构建和测试 生成的文件
         uses: actions/upload-artifact@v2

@@ -1,10 +1,10 @@
 import {createApp} from 'vue';
 import App from './App.vue';
 import {ScxRouter} from './router';
-import {ScxKitComponentInstaller} from "../../scx-kit-component-installer.js";
+import {ScxComponent} from "../../scx-component.js";
 import 'scx-icon/register';
 
 createApp(App)
     .use(ScxRouter)
-    .use(ScxKitComponentInstaller)
+    .use(ScxComponent)
     .mount('#app');

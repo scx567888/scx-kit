@@ -1,4 +1,4 @@
-import {ScxApiHelper, ScxEventBus, ScxFSS, ScxReq} from "../../../scx-kit.js";
+import {ScxApiHelper, ScxEventBus, ScxFSS, ScxReq} from "../../../index.js";
 
 const scxApiHelper = new ScxApiHelper("http://127.0.0.1:8080");
 

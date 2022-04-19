@@ -10,7 +10,7 @@
 
 <script setup>
 import {computed, ref} from "vue";
-import {listToTree} from "../../../scx-kit.js";
+import {listToTree} from "../../../index.js";
 
 const listData = ref([
   {f: 1},
