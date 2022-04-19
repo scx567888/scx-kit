@@ -314,10 +314,10 @@ class ScxFSS {
         if (width || height || type) {
             const urlSearchParams = new URLSearchParams();
             if (width) {
-                urlSearchParams.set('w', width);
+                urlSearchParams.set('w', width+'');
             }
             if (height) {
-                urlSearchParams.set('h', height);
+                urlSearchParams.set('h', height+'');
             }
             if (type) {
                 urlSearchParams.set('t', type);
