@@ -2,9 +2,6 @@ import SparkMD5 from "spark-md5";
 import {JsonVOError} from "./scx-req.js";
 import {percentage} from "./vanilla-percentage.js";
 
-const CHECKING_MD5 = 'checking-md5';
-const UPLOADING = 'uploading';
-
 class FSSObject {
     fssObjectID;//文件的 id
     fileName;//文件的名称
@@ -30,13 +27,6 @@ class ScxFSS {
     scxReq
     maxUploadSize = 10 * 1024 * 1024 * 1024;//最大上传文件 写死 10GB
     chunkSize = 2 * 1024 * 1024;//切片大小 这里写死 2MB
-    uploadURL = '/api/fss/upload'; //上传 url
-    listInfoURL = '/api/fss/list-info'; // 列表信息 url
-    infoURL = '/api/fss/info'; // 信息 url
-    rawURL = '/api/fss/raw/';//raw 的 url
-    imageURL = '/api/fss/image/';//image 的 url
-    downloadURL = '/api/fss/download/'; //download 的 url
-    checkAnyFileExistsByThisMD5URL = '/api/fss/check-any-file-exists-by-this-md5';
 
     /**
      * req 对象
@@ -44,6 +34,66 @@ class ScxFSS {
      */
     constructor(scxReq) {
         this.scxReq = scxReq;
+    }
+
+    /**
+     * 上传 url
+     * @returns {string}
+     */
+    static uploadURL() {
+        return '/api/fss/upload';
+    }
+
+    /**
+     * 列表信息 url
+     * @returns {string}
+     */
+    static listInfoURL() {
+        return '/api/fss/list-info';
+    }
+
+    /**
+     *  信息 url
+     * @returns {string}
+     */
+    static infoURL() {
+        return '/api/fss/info';
+    }
+
+    /**
+     * raw 的 url
+     * @returns {string}
+     */
+    static rawURL() {
+        return '/api/fss/raw/';
+    }
+
+    /**
+     * image 的 url
+     * @returns {string}
+     */
+    static imageURL() {
+        return '/api/fss/image/';
+    }
+
+    /**
+     * download 的 url
+     * @returns {string}
+     */
+    static downloadURL() {
+        return '/api/fss/download/';
+    }
+
+    static checkAnyFileExistsByThisMD5URL() {
+        return '/api/fss/check-any-file-exists-by-this-md5';
+    }
+
+    static CHECKING() {
+        return 'checking';
+    }
+
+    static UPLOADING() {
+        return 'uploading';
     }
 
     /**
@@ -92,7 +142,7 @@ class ScxFSS {
             //设置加载文件回调
             fileReader.onload = (e) => {
                 //设置计算MD5的进度
-                onProgress(CHECKING_MD5, percentage(currentChunk, chunks));
+                onProgress(ScxFSS.CHECKING(), percentage(currentChunk, chunks));
                 //读取
                 spark.append(e.target.result);
                 currentChunk = currentChunk + 1;
@@ -102,7 +152,7 @@ class ScxFSS {
                 } else { //读完了 赋值MD5 并返回
                     chunkAndMD5.md5 = spark.end(false);
                     //设置校验 md5 为 100%
-                    onProgress(CHECKING_MD5, 100);
+                    onProgress(ScxFSS.CHECKING(), 100);
                     resolve(chunkAndMD5);
                 }
             };
@@ -167,7 +217,7 @@ class ScxFSS {
                 //创建上传方法
                 const uploadNext = () => {
                     //设置进度条 此处由已上传区块数量和全部区块数量计算而得
-                    onProgress(UPLOADING, percentage(i, chunk.length));
+                    onProgress(ScxFSS.UPLOADING(), percentage(i, chunk.length));
                     const uploadFormData = new FormData();
                     uploadFormData.append('fileName', fileName);
                     uploadFormData.append('fileData', chunk[i]);
@@ -177,13 +227,13 @@ class ScxFSS {
                     uploadFormData.append('nowChunkIndex', i + '');
 
                     //向后台发送请求
-                    this.scxReq.post(this.uploadURL, uploadFormData).then(data => {
+                    this.scxReq.post(ScxFSS.uploadURL(), uploadFormData).then(data => {
                         //这里因为有断点续传的功能所以可以直接设置 i 以便跳过已经上传过的区块
                         if (data.type === 'need-more') {
                             i = data.item;
                             uploadNext();
                         } else if (data.type === 'upload-success') {
-                            onProgress(UPLOADING, 100);
+                            onProgress(ScxFSS.UPLOADING(), 100);
                             resolve(data);
                         } else { //这里就属于返回一些别的 类型了 我们虽然不知道是啥,但肯定不对 所以返回错误
                             reject(data);
@@ -192,13 +242,13 @@ class ScxFSS {
                 }
 
                 //这里先检查一下服务器是否已经有相同MD5的文件了 有的话就不传了
-                this.scxReq.post(this.checkAnyFileExistsByThisMD5URL, {
+                this.scxReq.post(ScxFSS.checkAnyFileExistsByThisMD5URL(), {
                     fileName,
                     fileSize,
                     fileMD5: md5
                 }).then(data => {
                     //这里表示服务器已经有这个文件了
-                    onProgress(UPLOADING, 100);
+                    onProgress(ScxFSS.UPLOADING(), 100);
                     resolve(data);
                 }).catch(e => {//这里表示服务器没找到这个文件 还是老老实实的传吧
                     //这里错误的种类比较多 也可能是网络错误或者权限错误啥的 这里判断一下先
@@ -221,7 +271,7 @@ class ScxFSS {
      */
     info(fssObjectID) {
         return new Promise((resolve, reject) => {
-            this.scxReq.post(this.infoURL, {fssObjectID}).then(data => {
+            this.scxReq.post(ScxFSS.infoURL(), {fssObjectID}).then(data => {
                 resolve(data ? new FSSObject(data) : null);
             }).catch(e => {
                 reject(e)
@@ -236,7 +286,7 @@ class ScxFSS {
      */
     listInfo(fssObjectIDs) {
         return new Promise((resolve, reject) => {
-            this.scxReq.post(this.listInfoURL, {fssObjectIDs}).then(data => {
+            this.scxReq.post(ScxFSS.listInfoURL(), {fssObjectIDs}).then(data => {
                 const fssObjectList = data.map(i => new FSSObject(i));
                 resolve(fssObjectList);
             }).catch(e => {
@@ -250,7 +300,7 @@ class ScxFSS {
      * @param fssObjectID
      */
     joinRawURL(fssObjectID) {
-        return this.scxReq.scxApiHelper.joinHttpURL(this.rawURL) + fssObjectID
+        return this.scxReq.scxApiHelper.joinHttpURL(ScxFSS.rawURL()) + fssObjectID
     };
 
     /**
@@ -274,7 +324,7 @@ class ScxFSS {
             }
             queryStr = "?" + urlSearchParams.toString();
         }
-        return this.scxReq.scxApiHelper.joinHttpURL(this.imageURL) + fssObjectID + queryStr;
+        return this.scxReq.scxApiHelper.joinHttpURL(ScxFSS.imageURL()) + fssObjectID + queryStr;
     };
 
     /**
@@ -282,7 +332,7 @@ class ScxFSS {
      * @param fssObjectID
      */
     joinDownloadURL(fssObjectID) {
-        return this.scxReq.scxApiHelper.joinHttpURL(this.downloadURL) + fssObjectID
+        return this.scxReq.scxApiHelper.joinHttpURL(ScxFSS.downloadURL()) + fssObjectID
     };
 
 }
@@ -329,7 +379,5 @@ class JoinImageURLOptions {
 export {
     ScxFSS,
     JoinImageURLOptions,
-    FSSObject,
-    CHECKING_MD5,
-    UPLOADING
+    FSSObject
 }

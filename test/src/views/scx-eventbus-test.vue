@@ -15,7 +15,7 @@
 
 <script>
 import {onMounted, ref} from "vue";
-import {ScxApiHelper, ScxEventBus} from "../../../scx-kit.js";
+import {ScxApiHelper, ScxEventBus} from "../../../index.js";
 
 export default {
   name: "scx-eventbus-test",

@@ -16,7 +16,7 @@
 
 <script>
 import {h, ref} from "vue";
-import {showContextMenu} from "../../../scx-kit.js";
+import {showContextMenu} from "../../../index.js";
 
 export default {
   name: "scx-contextmenu-test",

@@ -11,7 +11,7 @@
     "thirdparty-*",
     "vanilla-*"
   ],
-  "main": "scx-kit.js",
+  "main": "index.js",
   "type": "module",
   "repository": {
     "type": "git",
@@ -25,7 +25,6 @@
   "dependencies": {
     "spark-md5": "^3.0.2",
     "svg-mixer": "^2.3.14",
-    "tinymce": "^6.0.1",
     "vue": "^3.2.33",
     "xlsx": "^0.18.5"
   },
@@ -38,7 +37,6 @@
   "peerDependencies": {
     "spark-md5": "^3.0.2",
     "svg-mixer": "^2.3.14",
-    "tinymce": "^6.0.1",
     "vue": "^3.2.33",
     "xlsx": "^0.18.5"
   }

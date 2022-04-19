@@ -27,9 +27,6 @@
     </a>
     <a target="_blank" href="https://github.com/JetBrains/svg-mixer">
         <img src="https://img.shields.io/github/package-json/dependency-version/scx567888/scx-kit/svg-mixer?color=44be16" alt="svg-mixer"/>
-    </a> 
-    <a target="_blank" href="https://github.com/tinymce/tinymce">
-        <img src="https://img.shields.io/github/package-json/dependency-version/scx567888/scx-kit/tinymce?color=37b484" alt="TinyMCE"/>
     </a>
     <a target="_blank" href="https://github.com/vuejs/core">
         <img src="https://img.shields.io/github/package-json/dependency-version/scx567888/scx-kit/vue?color=29aaf5" alt="vue"/>
@@ -71,12 +68,12 @@ export default {
 
 ```javascript
 import {createApp} from 'vue';
-import {ScxKitComponentInstaller} from 'scx-kit/scx-kit-component-installer.js';
+import {ScxComponent} from 'scx-kit/scx-component.js';
 import App from './App.vue';
 import 'scx-icon/register'; //if type = js you need import this virtual module
 
 createApp(App)
-    .use(ScxKitComponentInstaller)
+    .use(ScxComponent)
     .mount('#app');
 ```
 
