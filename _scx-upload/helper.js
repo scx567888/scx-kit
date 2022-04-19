@@ -120,6 +120,8 @@ class ScxFSSHelper {
      */
     uploadHandler(needUploadFile, progress) {
         const onProgress = (state, value) => {
+            // todo 这里没有使用 ScxFSS.CHECKING() 而是直接引入字符串的原因
+            // todo 请参照 https://github.com/vitejs/vite/issues/7775
             //前 50% 是校验 md5 后 50% 才是真正的文件上传
             if (state === 'checking') {
                 progress(value * 0.5, "校验中");
