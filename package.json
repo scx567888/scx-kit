@@ -18,9 +18,9 @@
     "url": "https://github.com/scx567888/scx-kit.git"
   },
   "scripts": {
-    "dev": "vite test",
-    "build": "vite build test",
-    "serve": "vite preview test"
+    "dev:test": "vite test",
+    "build:test": "vite build test",
+    "serve:test": "vite preview test"
   },
   "dependencies": {
     "spark-md5": "^3.0.2",
