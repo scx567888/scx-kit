@@ -85,3 +85,7 @@ createApp(App)
 ```
 
 For more information, see [docs](https://scx.cool/docs/scx/index.html)
+
+## Stats
+
+![Alt](https://repobeats.axiom.co/api/embed/b93bc73fe16c448b42c101016406e859bd522872.svg "Repobeats analytics image")
