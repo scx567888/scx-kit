@@ -106,6 +106,12 @@ export default {
      */
     const uploadInfoList = ref([]);
 
+    /**
+     * 当前是否有上传任务 防止多次点击上传文件按钮上传时产生多次上传任务
+     * @type {boolean}
+     */
+    let hasUploadTask = false;
+
     //上传文件
     async function callUploadHandler(needUploadFiles) {
       if (props.beforeUpload) {
@@ -118,23 +124,39 @@ export default {
         const i = new UploadInfo();
         i.fileName = needUploadFile.name;
         i.file = needUploadFile;
-        i.progressState = "等待上传中...";
+        i.progressState = "等待中";
         i.progressVisible = true;
         i.progressValue = 0;
         uploadInfoList.value.push(i);
       }
-      const uu = uploadInfoList.value.filter(u => u.progressState === "等待上传中...");
-      for (let u of uu) {
+      //如果当前没有上传任务 则进行递归上传
+      if (!hasUploadTask) {
+        await callUploadHandler0();
+      }
+    }
+
+    /**
+     * 这里我们为了减少服务器的压力并不采取批量上传 而是一条传完再传下一条
+     * @returns {Promise<void>}
+     */
+    async function callUploadHandler0() {
+      hasUploadTask = true;
+      const nextNeedUpload = uploadInfoList.value.find(u => u.progressState === "等待中");
+      if (nextNeedUpload) {
         const progress = (v, s = "上传中") => {
-          u.progressValue = v;
-          u.progressState = s;
+          nextNeedUpload.progressValue = v;
+          nextNeedUpload.progressState = s;
         };
-        u.fileID = await getUploadHandler()(u.file, progress);
-        const item = await getFileInfoHandler()(u.fileID);
-        u.fill(item);
-        u.file = null;
-        u.progressVisible = false;
-        u.progressValue = 0;
+        nextNeedUpload.fileID = await getUploadHandler()(nextNeedUpload.file, progress);
+        const item = await getFileInfoHandler()(nextNeedUpload.fileID);
+        nextNeedUpload.fill(item);
+        nextNeedUpload.file = null;
+        nextNeedUpload.progressVisible = false;
+        nextNeedUpload.progressValue = 0;
+        //进行下一次上传
+        await callUploadHandler0();
+      } else {
+        hasUploadTask = false;
       }
     }
 
