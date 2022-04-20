@@ -37,8 +37,17 @@
     display: flex;
     position: relative;
     width: 100%;
-    justify-content: space-between;
     flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.scx-upload-list .preview-text > a {
+    text-decoration: unset;
+}
+
+.scx-upload-list .preview-text > a:hover {
+    text-decoration: underline;
 }
 
 .scx-upload-list .progress-state {
