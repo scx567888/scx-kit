@@ -13,11 +13,6 @@
     background-color: rgba(24, 144, 255, 0.2);
 }
 
-.scx-upload-list .scx-group-item-operation {
-    top: 2px;
-    right: 2px;
-}
-
 .scx-upload-list .upload-button {
     align-self: start;
 }

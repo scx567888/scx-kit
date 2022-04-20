@@ -125,7 +125,7 @@ export default {
     });
 
     function deleteFile() {
-      proxyModelValue.value = null;
+      proxyModelValue.value = '';
     }
 
     const uploadInfo = reactive(new UploadInfo());
@@ -168,11 +168,11 @@ export default {
     }
 
     function callFileInfoHandler(fileID) {
-      if (fileID === null) {
+      if (fileID) {
+        getFileInfoHandler()(fileID).then(item => uploadInfo.fill(item));
+      } else {
         uploadInfo.reset();
-        return;
       }
-      getFileInfoHandler()(fileID).then(item => uploadInfo.fill(item));
     }
 
     //我们根据 proxyModelValue 实时更新 fileInfo
