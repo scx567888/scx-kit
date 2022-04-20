@@ -35,7 +35,6 @@
 <script>
 import './index.css'
 import {computed, inject, reactive, ref, watch} from "vue";
-import ScxIcon from "../_scx-icon/index.vue";
 import ScxGroup from "../_scx-group/index.vue";
 import {ScxFSSHelper, UploadInfo} from "../_scx-upload/helper.js";
 import {arrayEquals} from "../vanilla-array-utils.js";
@@ -43,8 +42,7 @@ import {arrayEquals} from "../vanilla-array-utils.js";
 export default {
   name: "scx-upload-list",
   components: {
-    ScxGroup,
-    ScxIcon
+    ScxGroup
   },
   props: {
     modelValue: {
