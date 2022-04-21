@@ -48,7 +48,7 @@
           {{ uploadInfo.progressState }}
         </div>
         <!-- 以下为进度条 -->
-        <scx-progress v-model="uploadInfo.progressValue"></scx-progress>
+        <scx-progress v-model="uploadInfo.progressValue"/>
       </div>
 
     </div>
