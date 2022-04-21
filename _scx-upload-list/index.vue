@@ -13,8 +13,8 @@
       <template #default="{index,item}">
         <img :src="item.previewURL" alt="img" class="preview-image">
         <div class="preview-text">
-          <a class="file-name" v-if="item.downloadURL" :href="item.downloadURL">{{ item.fileName }}</a>
-          <span class="file-name" v-else>{{ item.fileName }}</span>
+          <a v-if="item.downloadURL" :href="item.downloadURL" class="file-name">{{ item.fileName }}</a>
+          <span v-else class="file-name">{{ item.fileName }}</span>
           <div v-if="item.progressVisible" class="progress-state">
             <div class="progress-state-text">{{ item.progressState }}</div>
             <scx-progress v-model="item.progressValue"/>
