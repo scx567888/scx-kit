@@ -44,12 +44,11 @@
         </div>
       </div>
       <div class="progress-state">
-        <div>
-          <div>{{ uploadInfo.progressState }}</div>
-          <div>{{ uploadInfo.progressValue }}%</div>
+        <div class="progress-state-text">
+          {{ uploadInfo.progressState }}
         </div>
         <!-- 以下为进度条 -->
-        <progress :max="100" :value="uploadInfo.progressValue"></progress>
+        <scx-progress v-model="uploadInfo.progressValue"></scx-progress>
       </div>
 
     </div>
@@ -61,6 +60,7 @@
 import './index.css'
 import {computed, inject, reactive, ref, watch} from "vue";
 import ScxIcon from "../_scx-icon/index.vue";
+import ScxProgress from "../_scx-progress/index.vue";
 import {download} from "../vanilla-download.js";
 import {percentage} from "../vanilla-percentage.js";
 import {ScxFSSHelper, UploadInfo} from "./helper.js";
@@ -68,6 +68,7 @@ import {ScxFSSHelper, UploadInfo} from "./helper.js";
 export default {
   name: "scx-upload",
   components: {
+    ScxProgress,
     ScxIcon
   },
   props: {
