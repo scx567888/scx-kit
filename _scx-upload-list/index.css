@@ -77,6 +77,7 @@
     font-size: 14px;
     color: rgb(61, 61, 61);
     max-width: 100%;
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
     white-space: nowrap;
 }
