@@ -11,19 +11,16 @@
         <button class="upload-button" @click="selectFile">点击上传, 当前共 {{ proxyModelValue.length }} 个文件</button>
       </template>
       <template #default="{index,item}">
-        <div class="preview-item">
-          <img :src="item.previewURL" alt="img" class="preview-image">
-          <div class="preview-text">
-            <a v-if="item.downloadURL" :href="item.downloadURL">{{ item.fileName }}</a>
-            <span v-else>{{ item.fileName }}</span>
-            <div v-if="item.progressVisible" class="progress-state">
-              <div>{{ item.progressState }}</div>
-              <progress :max="100" :value="item.progressValue"></progress>
-            </div>
-            <div v-else class="item-info">
-              <div>上传时间 : {{ item.uploadTime }}</div>
-              <div>文件大小 : {{ item.fileSizeDisplay }}</div>
-            </div>
+        <img :src="item.previewURL" alt="img" class="preview-image">
+        <div class="preview-text">
+          <a class="file-name" v-if="item.downloadURL" :href="item.downloadURL">{{ item.fileName }}</a>
+          <span class="file-name" v-else>{{ item.fileName }}</span>
+          <div v-if="item.progressVisible" class="progress-state">
+            <div class="progress-state-text">{{ item.progressState }}</div>
+            <scx-progress v-model="item.progressValue"/>
+          </div>
+          <div v-else class="item-info">
+            上传时间 : {{ item.uploadTime }} 文件大小 : {{ item.fileSizeDisplay }}
           </div>
         </div>
       </template>
@@ -36,13 +33,16 @@
 import './index.css'
 import {computed, inject, reactive, ref, watch} from "vue";
 import ScxGroup from "../_scx-group/index.vue";
+import ScxProgress from "../_scx-progress/index.vue";
 import {ScxFSSHelper, UploadInfo} from "../_scx-upload/helper.js";
 import {arrayEquals} from "../vanilla-array-utils.js";
+import {percentage} from "../vanilla-percentage.js";
 
 export default {
   name: "scx-upload-list",
   components: {
-    ScxGroup
+    ScxGroup,
+    ScxProgress
   },
   props: {
     modelValue: {
@@ -129,7 +129,11 @@ export default {
       }
       //如果当前没有上传任务 则进行递归上传
       if (!hasUploadTask) {
-        await callUploadHandler0();
+        try {
+          await callUploadHandler0();
+        } catch (e) {
+          console.error(e);
+        }
       }
     }
 
@@ -142,9 +146,10 @@ export default {
       const nextNeedUpload = uploadInfoList.value.find(u => u.progressState === "等待中");
       if (nextNeedUpload) {
         const progress = (v, s = "上传中") => {
-          nextNeedUpload.progressValue = v;
+          //处理一下百分比的格式防止  33.33333333333339 这种情况出现
           nextNeedUpload.progressState = s;
-        };
+          nextNeedUpload.progressValue = percentage(v, 100);
+        }
         nextNeedUpload.fileID = await getUploadHandler()(nextNeedUpload.file, progress);
         const item = await getFileInfoHandler()(nextNeedUpload.fileID);
         nextNeedUpload.fill(item);
