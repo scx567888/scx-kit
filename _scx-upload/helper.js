@@ -28,7 +28,7 @@ class UploadInfo {
      * a
      * @type {string}
      */
-    progressState = '上传中';
+    progressState = '';
 
     /**
      * a

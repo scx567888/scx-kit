@@ -60,6 +60,10 @@ export default {
     beforeUpload: {
       type: Function,
       default: null
+    },
+    onError: {
+      type: Function,
+      default: null
     }
   },
   setup(props, ctx) {
@@ -74,6 +78,10 @@ export default {
 
     function getUploadHandler() {
       return props.uploadHandler ? props.uploadHandler : (needUploadFile, progress) => scxFSSHelper.uploadHandler(needUploadFile, progress);
+    }
+
+    function getOnError() {
+      return props.onError ? props.onError : (error, file) => console.error(error, file);
     }
 
     const hiddenInputRef = ref(null);
@@ -129,11 +137,7 @@ export default {
       }
       //如果当前没有上传任务 则进行递归上传
       if (!hasUploadTask) {
-        try {
-          await callUploadHandler0();
-        } catch (e) {
-          console.error(e);
-        }
+        await callUploadHandler0();
       }
     }
 
@@ -150,11 +154,16 @@ export default {
           nextNeedUpload.progressState = s;
           nextNeedUpload.progressValue = percentage(v, 100);
         }
-        nextNeedUpload.fileID = await getUploadHandler()(nextNeedUpload.file, progress);
+        try {
+          nextNeedUpload.fileID = await getUploadHandler()(nextNeedUpload.file, progress);
+          nextNeedUpload.progressVisible = false;
+        } catch (e) {
+          getOnError()(e, nextNeedUpload.file);
+          nextNeedUpload.progressState = '上传失败';
+        }
         const item = await getFileInfoHandler()(nextNeedUpload.fileID);
         nextNeedUpload.fill(item);
         nextNeedUpload.file = null;
-        nextNeedUpload.progressVisible = false;
         nextNeedUpload.progressValue = 0;
         //进行下一次上传
         await callUploadHandler0();
@@ -170,19 +179,13 @@ export default {
     function callFileInfoHandler(fileIDs) {
       if (!arrayEquals(fileIDs, getFileIDs(uploadInfoList.value))) {
         console.log("外部发生变化 !!!");
-        const tempList = [];
-        for (let fileID of fileIDs) {
+        uploadInfoList.value = fileIDs.map(fileID => {
           const u = reactive(new UploadInfo());
           u.fileID = fileID;
-          tempList.push(u);
-          getFileInfoHandler()(u.fileID).then(item => {
-            u.fill(item);
-            u.file = null;
-            u.progressVisible = false;
-            u.progressValue = 0;
-          });
-        }
-        uploadInfoList.value = tempList;
+          u.fileName = fileID;
+          getFileInfoHandler()(u.fileID).then(item => u.fill(item));
+          return u;
+        });
       }
     }
 

@@ -87,6 +87,10 @@ export default {
     beforeUpload: {
       type: Function,
       default: null
+    },
+    onError: {
+      type: Function,
+      default: null
     }
   },
   setup(props, ctx) {
@@ -101,6 +105,10 @@ export default {
 
     function getUploadHandler() {
       return props.uploadHandler ? props.uploadHandler : (needUploadFile, progress) => scxFSSHelper.uploadHandler(needUploadFile, progress);
+    }
+
+    function getOnError() {
+      return props.onError ? props.onError : (error, file) => console.error(error, file);
     }
 
     const hiddenInputRef = ref(null);
@@ -141,7 +149,7 @@ export default {
       }
     }
 
-    function callUploadHandler(needUploadFile) {
+    async function callUploadHandler(needUploadFile) {
       if (props.beforeUpload) {
         const result = props.beforeUpload(needUploadFile);
         if (!result) {
@@ -158,14 +166,13 @@ export default {
         uploadInfo.progressValue = percentage(v, 100);
       }
       //开始上传
-      getUploadHandler()(needUploadFile, progress).then(d => {
-        proxyModelValue.value = d;
-      }).catch(e => {
-        console.error(e);
-      }).finally(() => {
-        uploadInfo.progressVisible = false;
-        uploadInfo.progressValue = 0;
-      });
+      try {
+        proxyModelValue.value = await getUploadHandler()(needUploadFile, progress);
+      } catch (e) {
+        getOnError()(e, needUploadFile);
+      }
+      uploadInfo.progressVisible = false;
+      uploadInfo.progressValue = 0;
     }
 
     function callFileInfoHandler(fileID) {
