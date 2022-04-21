@@ -7,17 +7,17 @@
         <div class="scx-group-item-operation">
           <div v-if="showMoveUp(i)" class="scx-group-item-move-up-button" @click="groupItemMoveUp(i)">
             <slot name="moveUpButton">
-              <button>↑</button>
+              <button class="placeholder-button">↑</button>
             </slot>
           </div>
           <div v-if="showMoveDown(i)" class="scx-group-item-move-down-button" @click="groupItemMoveDown(i)">
             <slot name="moveDownButton">
-              <button>↓</button>
+              <button class="placeholder-button">↓</button>
             </slot>
           </div>
           <div class="scx-group-item-remove-button" @click="groupItemRemove(i)">
             <slot name="removeButton">
-              <button>X</button>
+              <button class="placeholder-button">X</button>
             </slot>
           </div>
         </div>

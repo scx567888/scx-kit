@@ -7,6 +7,8 @@
     overflow: hidden;
     border: 1px solid #3a8ee6;
     padding: 5px;
+    display: flex;
+    column-gap: 10px;
 }
 
 .scx-upload-list .scx-group-item:hover {
@@ -15,13 +17,6 @@
 
 .scx-upload-list .upload-button {
     align-self: start;
-}
-
-.scx-upload-list .preview-item {
-    height: 60px;
-    display: flex;
-    column-gap: 10px;
-    width: 100%;
 }
 
 .scx-upload-list .preview-image {
@@ -40,6 +35,14 @@
     flex-direction: column;
     justify-content: space-between;
     align-items: flex-start;
+    overflow: hidden;
+}
+
+.scx-upload-list .file-name {
+    max-width: calc(100% - 70px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .scx-upload-list .preview-text > a {
@@ -57,22 +60,23 @@
     width: 100%;
 }
 
-.scx-upload-list .progress-state > div {
-    display: flex;
-    justify-content: space-between;
+.scx-upload-list .progress-state > .progress-state-text {
     flex-shrink: 0;
+    font-weight: 600;
+    font-size: 14px;
+    color: rgb(61, 61, 61);
 }
 
-.scx-upload-list .progress-state > progress {
+.scx-upload-list .progress-state > .scx-progress {
     width: 100%;
 }
 
 .scx-upload-list .item-info {
     display: flex;
-    align-items: center;
-    column-gap: 10px;
     font-weight: 600;
     font-size: 14px;
     color: rgb(61, 61, 61);
-    width: 100%;
+    max-width: 100%;
+    overflow: auto;
+    white-space: nowrap;
 }

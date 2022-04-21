@@ -173,17 +173,17 @@
     flex-direction: column;
     font-weight: 600;
     flex-shrink: 0;
-}
-
-.scx-upload .progress-state > div {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding: 5px;
     box-sizing: border-box;
+    row-gap: 5px;
 }
 
-.scx-upload .progress-state > progress {
+.scx-upload .progress-state > .progress-state-text {
+    flex-shrink: 0;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.scx-upload .progress-state > .scx-progress {
     width: 100%;
 }
