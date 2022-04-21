@@ -40,6 +40,15 @@
     /* 占位用 方便开发者覆盖 css */
 }
 
+/*简单设置一下 默认占位按钮的样式*/
+.scx-group-item-operation .placeholder-button {
+    display: flex;
+    height: 22px;
+    width: 22px;
+    justify-content: center;
+    align-items: center;
+}
+
 /*以下为 vue 动画*/
 .scx-group-list-enter-from {
     opacity: 0;
