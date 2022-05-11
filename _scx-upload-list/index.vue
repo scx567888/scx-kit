@@ -99,7 +99,8 @@ export default {
 
     const proxyModelValue = computed({
       get() {
-        return props.modelValue;
+        //处理有时外部数据为 null 或 undefined 的情况
+        return props.modelValue ? props.modelValue : [];
       },
       set(value) {
         ctx.emit("update:modelValue", value);
