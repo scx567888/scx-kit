@@ -4,7 +4,7 @@ import ScxGroup from './scx-group/index.vue'
 import ScxUpload from './scx-upload/index.vue'
 import ScxUploadList from './scx-upload-list/index.vue'
 import ScxProgress from './scx-progress/index.vue'
-import {ScxContextMenuDirective} from "./scx-context-menu/index.js";
+import {ScxContextMenuDirective,showContextMenu,closeContextMenu} from "./scx-context-menu/index.js";
 import {ScxDragDirective} from "./scx-drag/index.js";
 
 //以下为组件
@@ -23,6 +23,8 @@ const ScxComponent = {
 };
 
 export {
+    showContextMenu,
+    closeContextMenu,
     ScxIcon,
     ScxCrud,
     ScxGroup,

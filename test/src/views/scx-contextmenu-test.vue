@@ -16,7 +16,7 @@
 
 <script>
 import {h, ref} from "vue";
-import {showContextMenu} from "../../../index.js";
+import {showContextMenu} from "../../../scx-component/index.js";
 
 export default {
   name: "scx-contextmenu-test",
