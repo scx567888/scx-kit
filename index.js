@@ -1,5 +1,4 @@
 export * from './scx-api-helper.js'
-export * from './scx-context-menu.js'
 export * from './scx-event-bus.js'
 export * from './scx-fss.js'
 export * from './scx-req.js'

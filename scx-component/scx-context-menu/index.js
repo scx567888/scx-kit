@@ -1,4 +1,4 @@
-import ScxContextMenu from "./scx-component/scx-context-menu/index.vue";
+import ScxContextMenu from "./index.vue";
 import {h, render} from "vue";
 
 let contextMenuInstance;

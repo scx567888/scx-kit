@@ -11,7 +11,7 @@
 <script>
 import './index.css'
 import {onMounted, ref} from 'vue'
-import {closeContextMenu} from "../../scx-context-menu.js";
+import {closeContextMenu} from "./index.js";
 
 export default {
   name: "scx-context-menu",
