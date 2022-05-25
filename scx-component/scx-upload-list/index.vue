@@ -32,11 +32,11 @@
 <script>
 import './index.css'
 import {computed, inject, reactive, ref, watch} from "vue";
-import ScxGroup from "../_scx-group/index.vue";
-import ScxProgress from "../_scx-progress/index.vue";
-import {ScxFSSHelper, UploadInfo} from "../_scx-upload/helper.js";
-import {arrayEquals} from "../vanilla-array-utils.js";
-import {percentage} from "../vanilla-percentage.js";
+import ScxGroup from "../scx-group/index.vue";
+import ScxProgress from "../scx-progress/index.vue";
+import {ScxFSSHelper, UploadInfo} from "../scx-upload/helper.js";
+import {arrayEquals} from "../../vanilla-array-utils.js";
+import {percentage} from "../../vanilla-percentage.js";
 
 export default {
   name: "scx-upload-list",

@@ -59,10 +59,10 @@
 <script>
 import './index.css'
 import {computed, inject, reactive, ref, watch} from "vue";
-import ScxIcon from "../_scx-icon/index.vue";
-import ScxProgress from "../_scx-progress/index.vue";
-import {download} from "../vanilla-download.js";
-import {percentage} from "../vanilla-percentage.js";
+import ScxIcon from "../scx-icon/index.vue";
+import ScxProgress from "../scx-progress/index.vue";
+import {download} from "../../vanilla-download.js";
+import {percentage} from "../../vanilla-percentage.js";
 import {ScxFSSHelper, UploadInfo} from "./helper.js";
 
 export default {
