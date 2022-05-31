@@ -7,17 +7,17 @@
         <div class="scx-group-item-operation">
           <div v-if="showMoveUp(i)" class="scx-group-item-move-up-button" @click="groupItemMoveUp(i)">
             <slot name="moveUpButton">
-              <button class="placeholder-button">↑</button>
+              <button class="placeholder-button" type="button">↑</button>
             </slot>
           </div>
           <div v-if="showMoveDown(i)" class="scx-group-item-move-down-button" @click="groupItemMoveDown(i)">
             <slot name="moveDownButton">
-              <button class="placeholder-button">↓</button>
+              <button class="placeholder-button" type="button">↓</button>
             </slot>
           </div>
-          <div class="scx-group-item-remove-button" @click="groupItemRemove(i)">
+          <div v-if="showRemoveButton" class="scx-group-item-remove-button" @click="groupItemRemove(i)">
             <slot name="removeButton">
-              <button class="placeholder-button">X</button>
+              <button class="placeholder-button" type="button">X</button>
             </slot>
           </div>
         </div>
@@ -54,6 +54,14 @@ export default {
       default: null
     },
     loop: {
+      type: Boolean,
+      default: true
+    },
+    showRemoveButton: {
+      type: Boolean,
+      default: true
+    },
+    showMoveButton: {
       type: Boolean,
       default: true
     }
@@ -104,6 +112,9 @@ export default {
     }
 
     function showMoveUp(i) {
+      if (!props.showMoveButton) {
+        return false;
+      }
       const minIndex = 0;
       //数据量小的时候没必要显示
       if (list.value.length <= 2 && i === minIndex) {
@@ -114,6 +125,9 @@ export default {
     }
 
     function showMoveDown(i) {
+      if (!props.showMoveButton) {
+        return false;
+      }
       const maxIndex = list.value.length - 1;
       //数据量小的时候没必要显示
       if (list.value.length <= 2 && i === maxIndex) {

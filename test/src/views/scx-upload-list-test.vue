@@ -1,7 +1,7 @@
 <template>
   <scx-upload-list v-model="nowFiles" :before-upload="b"/>
   <br>
-  <scx-upload-list v-model="nowFiles"/>
+  <scx-upload-list v-model="nowFiles" disabled/>
   {{ nowFiles }}
 
 </template>

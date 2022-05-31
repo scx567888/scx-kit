@@ -3,17 +3,17 @@
 
     <!-- 左侧添加按钮及下拉选 -->
     <template #header-left>
-      <button>添加</button>
-      <button>导入</button>
-      <button>导出</button>
+      <button type="button">添加</button>
+      <button type="button">导入</button>
+      <button type="button">导出</button>
     </template>
 
     <!-- 右侧查询项及搜索按钮 -->
     <template #header-right>
       <input placeholder="请输入姓名">
       <input pattern="请输入年龄" type="number">
-      <button>搜索</button>
-      <button>重置</button>
+      <button type="button">搜索</button>
+      <button type="button">重置</button>
     </template>
 
     <!-- 主部分 -->
@@ -31,8 +31,8 @@
             <td>{{ i.age }}</td>
             <td>{{ i.address }}</td>
             <td>
-              <button>编辑</button>
-              <button>删除</button>
+              <button type="button">编辑</button>
+              <button type="button">删除</button>
             </td>
           </tr>
         </table>
@@ -42,7 +42,7 @@
 
     <!-- 底部 -->
     <template #footer>
-      <button>批量删除</button>
+      <button type="button">批量删除</button>
       <span>假的分页插件 1, 2, 3, 4, 5, 6, 7</span>
     </template>
 
