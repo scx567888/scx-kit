@@ -18,12 +18,12 @@
           </div>
         </template>
         <template #after>
-          <button @click="groupItemAdd2(item.c)">添加一条子级数据</button>
+          <button type="button" @click="groupItemAdd2(item.c)">添加一条子级数据</button>
         </template>
       </scx-group>
     </template>
     <template #after>
-      <button @click="groupItemAdd1()">添加一条父级数据</button>
+      <button type="button" @click="groupItemAdd1()">添加一条父级数据</button>
     </template>
   </scx-group>
 
@@ -46,12 +46,12 @@
           </div>
         </template>
         <template #after>
-          <button @click="groupItemAdd2(item.c)">添加一条子级数据</button>
+          <button type="button" @click="groupItemAdd2(item.c)">添加一条子级数据</button>
         </template>
       </scx-group>
     </template>
     <template #after>
-      <button @click="groupItemAdd1()">添加一条父级数据</button>
+      <button type="button" @click="groupItemAdd1()">添加一条父级数据</button>
     </template>
   </scx-group>
   {{ data }}

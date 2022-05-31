@@ -8,7 +8,7 @@
     <br>
     <textarea v-model="imInput2" style="width: 300px;height: 200px"/>
     <br>
-    <button @click="send">发送</button>
+    <button type="button" @click="send">发送</button>
     <br>
   </div>
 </template>

@@ -5,10 +5,10 @@
     <input ref="hiddenInputRef" multiple placeholder="file" style="display: none" type="file"
            @change="onHiddenInputChange">
 
-    <scx-group v-model="uploadInfoList">
-      <template #before>
+    <scx-group v-model="uploadInfoList" :show-move-button="!disabled" :show-remove-button="!disabled">
+      <template v-if="!disabled" #before>
         <!-- 上传按钮 -->
-        <button class="upload-button" @click="selectFile">点击上传, 当前共 {{ proxyModelValue.length }} 个文件</button>
+        <button class="upload-button" type="button" @click="selectFile">点击上传, 当前共 {{ proxyModelValue.length }} 个文件</button>
       </template>
       <template #default="{index,item}">
         <img :src="item.previewURL" alt="img" class="preview-image">
@@ -64,6 +64,10 @@ export default {
     onError: {
       type: Function,
       default: null
+    },
+    disabled: { //若为 true 则只具有展示效果 不能上传删除和排序
+      type: Boolean,
+      default: false
     }
   },
   setup(props, ctx) {

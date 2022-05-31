@@ -1,6 +1,6 @@
 <template>
   <div>
-    <button @click="exportXLSX()">点击导出</button>
+    <button type="button" @click="exportXLSX()">点击导出</button>
   </div>
 </template>
 
