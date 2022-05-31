@@ -21,20 +21,27 @@
         <div class="item-download" @click="downloadFile">
           下载
         </div>
-        <div class="item-replace" @click="selectFile">
+        <div v-if="!disabled" class="item-replace" @click="selectFile">
           替换
         </div>
-        <div class="item-delete" @click="deleteFile">
+        <div v-if="!disabled" class="item-delete" @click="deleteFile">
           删除
         </div>
       </div>
     </div>
 
-    <!-- 没有文件时显示 -->
-    <div v-else :class="dragover ?'dragover ':''" class="no-preview" @click="selectFile" @dragleave="callDragleave"
+    <!-- 没有文件且允许上传时显示 -->
+    <div v-else-if="!disabled" :class="dragover ?'dragover ':''" class="no-preview" @click="selectFile"
+         @dragleave="callDragleave"
          @dragover="callDragover" @drop="callDrop">
       <scx-icon icon="outlined-plus-circle"/>
       <span>点击或拖拽</span>
+    </div>
+
+    <!-- 没有文件且不允许上传时 -->
+    <div v-else class="no-preview">
+      <scx-icon icon="outlined-question"/>
+      <span>无图片</span>
     </div>
 
     <div v-if="uploadInfo.progressVisible" class="progress">
@@ -91,6 +98,10 @@ export default {
     onError: {
       type: Function,
       default: null
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     }
   },
   setup(props, ctx) {

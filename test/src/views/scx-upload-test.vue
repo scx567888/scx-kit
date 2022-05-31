@@ -2,7 +2,7 @@
   <p>这个添加了类型校验</p>
   <scx-upload v-model="nowFile" :before-upload="b"/>
   <p>这个没有添加类型校验</p>
-  <scx-upload v-model="nowFile"/>
+  <scx-upload v-model="nowFile" disabled/>
   <br>
   <input v-model="nowFile">
 </template>
