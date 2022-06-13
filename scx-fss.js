@@ -32,10 +32,11 @@ class ScxFSS {
     /**
      * req 对象
      * @param scxReq {ScxReq}
+     * @param scxJsonVoReq
      */
-    constructor(scxReq) {
+    constructor(scxReq, scxJsonVoReq = null) {
         this.scxReq = scxReq;
-        this.scxJsonVoReq = new ScxJsonVoReq(this.scxReq);
+        this.scxJsonVoReq = scxJsonVoReq ? scxJsonVoReq : new ScxJsonVoReq(scxReq);
     }
 
     /**

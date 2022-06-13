@@ -15,13 +15,14 @@
 
 <script>
 import {provide} from "vue";
-import {scxApiHelper, scxEventBus, scxFSS, scxReq} from "./_scx/index.js";
+import {scxApiHelper, scxEventBus, scxFSS, scxJsonVoReq, scxReq} from "./_scx/index.js";
 
 export default {
   name: "App",
   setup() {
     provide("scx-api-helper", scxApiHelper);
     provide("scx-req", scxReq);
+    provide("scx-json-vo-req", scxJsonVoReq);
     provide("scx-event-bus", scxEventBus);
     provide("scx-fss", scxFSS);
   }
