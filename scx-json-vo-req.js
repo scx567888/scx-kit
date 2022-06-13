@@ -32,7 +32,6 @@ class ScxJsonVoReq {
 
     scxReq
 
-
     constructor(scxReq) {
         this.scxReq = scxReq;
     }
