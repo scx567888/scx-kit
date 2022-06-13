@@ -28,14 +28,6 @@ class FetchError {
 
 }
 
-class JsonVOError {
-
-    constructor(error) {
-        Object.assign(this, error);
-    }
-
-}
-
 class ScxReqOptions {
 
     /**
@@ -54,11 +46,10 @@ class ScxReqOptions {
     originalResults;
 
     /**
-     * 想如何处理返回值 取值如下 [auto, arrayBuffer, blob, formData, json, text, jsonVO] (注意 originalResults 为 true 时此属性无效)
-     * jsonVO 是针对后台业务 JsonVo 进行特殊配置 1, 会仅将返回值中 message 字段为 ok 的作为正确请求 2, 会直接提取返回值中的 data 字段作为返回对象
+     * 默认想如何处理返回值 取值如下 [auto, arrayBuffer, blob, formData, json, text, ] (注意 originalResults 为 true 时此属性无效)
      *
      */
-    responseType;
+    defaultResponseType;
 
     /**
      * 在 fetch 中只有网络错误才会 reject
@@ -81,6 +72,40 @@ class ScxReqOptions {
 }
 
 /**
+ * 获取 header 中的 CONTENT_TYPE 判断相应的类型
+ * @param res
+ * @param defaultType 优先的返回值
+ */
+function getResponseType(res, defaultType) {
+    if (defaultType && defaultType !== 'auto') {
+        return defaultType;
+    }
+    let contentType = res.headers.get(HttpHeaderNames.CONTENT_TYPE);
+    if (contentType == null) {
+        return "arrayBuffer";
+    }
+    contentType = contentType.toLowerCase();
+    if (contentType.startsWith(HttpHeaderValues.APPLICATION_JSON)) {
+        return "json"
+    } else if (contentType.startsWith("text/") || contentType.startsWith(HttpHeaderValues.APPLICATION_XML)) {
+        return "text";
+    } else if (contentType.startsWith(HttpHeaderValues.MULTIPART_FORM_DATA)) {
+        return "formData"
+    } else {
+        return "arrayBuffer";
+    }
+}
+
+function createInit(method) {
+    return {
+        method,
+        headers: new Headers(),
+        credentials: 'include',
+        body: null
+    };
+}
+
+/**
  *  ScxReq : 针对 fetch 的简单封装
  */
 class ScxReq {
@@ -88,7 +113,7 @@ class ScxReq {
     defaultOptions = {
         method: "GET",
         originalResults: false,
-        responseType: "jsonVO",
+        defaultResponseType: "auto",
         rejectIfResponseNotOK: true,
         usePreInterceptor: false,
         usePostInterceptor: false,
@@ -133,28 +158,21 @@ class ScxReq {
             method = this.defaultOptions.method,
             headers,
             originalResults = this.defaultOptions.originalResults,
-            responseType = this.defaultOptions.responseType,
+            defaultResponseType = this.defaultOptions.defaultResponseType,
             rejectIfResponseNotOK = this.defaultOptions.rejectIfResponseNotOK,
             usePreInterceptor = this.defaultOptions.usePreInterceptor,
             usePostInterceptor = this.defaultOptions.usePostInterceptor,
         } = options;
         //初始化 fetch 参数 , 此处携带 cookie
-        const init = {
-            method,
-            headers: new Headers(),
-            credentials: 'include',
-            body: null
-        };
+        const init = createInit(method);
         //根据 body 类型设置请求头
         if (body) {
-            if (init.method === 'GET') {
-                if (Object.keys(body).length > 0) {
-                    finalURL = finalURL + '?' + ScxReq.toURLSearchParams(body);
-                }
-            } else if (body instanceof FormData) {
+            if (body instanceof FormData) {
                 init.body = body;
-            } else {
-                if (Object.keys(body).length > 0) {
+            } else if (Object.keys(body).length > 0) {
+                if (init.method === 'GET') {
+                    finalURL = finalURL + '?' + ScxReq.toURLSearchParams(body);
+                } else {
                     init.headers.set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON + ';charset=utf-8');
                     init.body = JSON.stringify(body);
                 }
@@ -183,56 +201,19 @@ class ScxReq {
                     reject(new ResponseNotOKError(res));
                     return;
                 }
-                switch (responseType) {
-                    case "arrayBuffer": {
-                        resolve(res.arrayBuffer());
-                        break;
-                    }
-                    case "blob": {
-                        resolve(res.blob());
-                        break;
-                    }
-                    case "formData": {
-                        resolve(res.formData());
-                        break;
-                    }
-                    case "json": {
-                        resolve(res.json());
-                        break;
-                    }
-                    case "text": {
-                        resolve(res.text());
-                        break;
-                    }
-                    case "jsonVO": {
-                        //这里是特殊处理
-                        res.json().then(d => {
-                            if (d.message === 'ok') {
-                                resolve(d.data);
-                            } else {
-                                reject(new JsonVOError(d));
-                            }
-                        }).catch(error => reject(new FetchError(error)))
-                        break;
-                    }
-                    case "auto":
-                    default : {
-                        let contentType = res.headers.get(HttpHeaderNames.CONTENT_TYPE);
-                        if (contentType != null) {
-                            contentType = contentType.toLowerCase();
-                            if (contentType.startsWith(HttpHeaderValues.APPLICATION_JSON)) {
-                                resolve(res.json());
-                            } else if (contentType.startsWith("text/") || contentType.startsWith(HttpHeaderValues.APPLICATION_XML)) {
-                                resolve(res.text());
-                            } else if (contentType.startsWith(HttpHeaderValues.MULTIPART_FORM_DATA)) {
-                                resolve(res.formData());
-                            } else {
-                                resolve(res.arrayBuffer());
-                            }
-                        } else {
-                            resolve(res.arrayBuffer());
-                        }
-                    }
+                const type = getResponseType(res, defaultResponseType);
+                if (type === "json") {
+                    resolve(res.json());
+                } else if (type === "arrayBuffer") {
+                    resolve(res.arrayBuffer());
+                } else if (type === "blob") {
+                    resolve(res.blob());
+                } else if (type === "formData") {
+                    resolve(res.formData());
+                } else if (type === "text") {
+                    resolve(res.text());
+                } else {
+                    resolve(res.arrayBuffer());
                 }
             }).catch(error => reject(new FetchError(error))));
         }
@@ -240,7 +221,7 @@ class ScxReq {
     }
 
     /**
-     *
+     * 前置处理器
      * @param request {RequestInit}
      * @returns {*}
      */
@@ -249,7 +230,7 @@ class ScxReq {
     }
 
     /**
-     *
+     * 后置处理器
      * @param response {Promise<Object>}
      * @returns {*}
      */
@@ -313,4 +294,4 @@ class ScxReq {
 
 }
 
-export {ScxReq, FetchError, JsonVOError, ResponseNotOKError}
+export {ScxReq, FetchError, ResponseNotOKError, ScxReqOptions}
