@@ -19,6 +19,10 @@ function jsonVoProcessor(r) {
     })
 }
 
+function optionsProcessor(options = {}) {
+    return {...options, defaultResponseType: "json"};
+}
+
 /**
  * 针对后台的 JsonVo 和 DataJsonVo 对 ScxReq 进行一次包装
  * 1, 将 JsonVo.ok() 和 JsonVo.fail() 区分开
@@ -41,7 +45,7 @@ class ScxJsonVoReq {
      * @returns {Promise<unknown>}
      */
     get(url, body = null, options = {}) {
-        return jsonVoProcessor(this.scxReq.get(url, body, options));
+        return jsonVoProcessor(this.scxReq.get(url, body, optionsProcessor(options)));
     }
 
     /**
@@ -52,7 +56,7 @@ class ScxJsonVoReq {
      * @returns {Promise<unknown>}
      */
     post(url, body = null, options = {}) {
-        return jsonVoProcessor(this.scxReq.post(url, body, options));
+        return jsonVoProcessor(this.scxReq.post(url, body, optionsProcessor(options)));
     }
 
     /**
@@ -63,7 +67,7 @@ class ScxJsonVoReq {
      * @returns {Promise<unknown>}
      */
     put(url, body = null, options = {}) {
-        return jsonVoProcessor(this.scxReq.put(url, body, options));
+        return jsonVoProcessor(this.scxReq.put(url, body, optionsProcessor(options)));
     }
 
     /**
@@ -74,7 +78,7 @@ class ScxJsonVoReq {
      * @returns {Promise<unknown>}
      */
     delete(url, body = null, options = {}) {
-        return jsonVoProcessor(this.scxReq.delete(url, body, options));
+        return jsonVoProcessor(this.scxReq.delete(url, body, optionsProcessor(options)));
     }
 
 }

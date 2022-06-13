@@ -106,6 +106,16 @@ function createInit(method) {
 }
 
 /**
+ * 参数处理器
+ * @param method
+ * @param  options {ScxReqOptions}
+ * @returns {ScxReqOptions}
+ */
+function optionsProcessor(method, options = {}) {
+    return {...options, method};
+}
+
+/**
  *  ScxReq : 针对 fetch 的简单封装
  */
 class ScxReq {
@@ -246,7 +256,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     get(url, body = null, options = {}) {
-        return this.req(url, body, this.optionsProcessor("GET", options));
+        return this.req(url, body, optionsProcessor("GET", options));
     }
 
     /**
@@ -257,7 +267,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     post(url, body = null, options = {}) {
-        return this.req(url, body, this.optionsProcessor("POST", options));
+        return this.req(url, body, optionsProcessor("POST", options));
     }
 
     /**
@@ -268,7 +278,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     put(url, body = null, options = {}) {
-        return this.req(url, body, this.optionsProcessor("PUT", options));
+        return this.req(url, body, optionsProcessor("PUT", options));
     }
 
     /**
@@ -279,17 +289,7 @@ class ScxReq {
      * @returns {Promise<unknown>}
      */
     delete(url, body = null, options = {}) {
-        return this.req(url, body, this.optionsProcessor("DELETE", options));
-    }
-
-    /**
-     *
-     * @param method
-     * @param  options {ScxReqOptions}
-     * @returns {ScxReqOptions}
-     */
-    optionsProcessor(method, options = {}) {
-        return {...options, method};
+        return this.req(url, body, optionsProcessor("DELETE", options));
     }
 
 }
