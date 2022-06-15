@@ -4,9 +4,9 @@ html.dark {
     /* 主要强调色 */
     --scx-theme: rgb(72, 147, 73);
     /* 用于背景强调色 或 hover 背景色 */
-    --scx-theme-bg: rgb(31, 54, 39);
+    --scx-theme-bg: rgb(0, 71, 25, 0.2);
     /* 次要强调色 */
-    --scx-theme-secondary: rgba(44, 170, 46, 0.6);
+    --scx-theme-secondary: rgba(72, 147, 73, 0.5);
     /* 主要背景 (也可以为图片) */
     --scx-bg: #2b2b2b;
     /* 主要文字颜色 */

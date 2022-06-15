@@ -6,7 +6,7 @@
     /* 用于背景强调色 或 hover 背景色 */
     --scx-theme-bg: rgba(24, 144, 255, 0.15);
     /* 次要强调色 */
-    --scx-theme-secondary: rgba(24, 144, 255, 0.6);
+    --scx-theme-secondary: rgba(24, 144, 255, 0.4);
     /* 主要背景 (也可以为图片) */
     --scx-bg: #f2f2f2;
     /* 主要文字颜色 */
@@ -14,7 +14,7 @@
     /* 次要文字颜色 */
     --scx-text-secondary-color: #909399;
     /* 占位文字颜色 */
-    --scx-text-placeholder-color: #757575;
+    --scx-text-placeholder-color: rgba(114, 114, 114, 0.5);
 
     /* 滚动条背景 */
     --scx-scrollbar-bg: transparent;
@@ -51,6 +51,8 @@ body {
     margin: 0;
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, Helvetica Neue, PingFang SC, Microsoft YaHei, Source Han Sans SC, Noto Sans CJK SC, WenQuanYi Micro Hei, sans-serif;
+    background: var(--scx-bg);
+    color: var(--scx-text-color);
 }
 
 /* 浏览器 选中字体 颜色 */

@@ -5,14 +5,14 @@
 .scx-upload-list .scx-group-item {
     border-radius: 4px;
     overflow: hidden;
-    border: 1px solid #3a8ee6;
+    border: 1px solid var(--scx-theme);
     padding: 5px;
     display: flex;
     column-gap: 10px;
 }
 
 .scx-upload-list .scx-group-item:hover {
-    background-color: rgba(24, 144, 255, 0.2);
+    background: var(--scx-theme-secondary);
 }
 
 .scx-upload-list .upload-button {
@@ -23,7 +23,7 @@
     height: 60px;
     width: 60px;
     flex-shrink: 0;
-    border: 1px solid #3a8ee6;
+    border: 1px solid var(--scx-theme);
     border-radius: 4px;
     box-sizing: border-box;
 }
@@ -43,6 +43,9 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: var(--scx-theme);
+    font-weight: 600;
+    font-size: 16px;
 }
 
 .scx-upload-list .preview-text > a {
@@ -64,7 +67,6 @@
     flex-shrink: 0;
     font-weight: 600;
     font-size: 14px;
-    color: rgb(61, 61, 61);
 }
 
 .scx-upload-list .progress-state > .scx-progress {
@@ -75,7 +77,6 @@
     display: flex;
     font-weight: 600;
     font-size: 14px;
-    color: rgb(61, 61, 61);
     max-width: 100%;
     overflow-x: auto;
     overflow-y: hidden;

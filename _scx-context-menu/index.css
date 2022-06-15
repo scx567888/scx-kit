@@ -1,7 +1,7 @@
 /*全局右键菜单*/
 .scx-contextmenu {
     margin: 0;
-    background: rgba(50, 50, 50, 0.89);
+    background: var(--scx-glass-bg);
     z-index: 3000;
     position: absolute;
     list-style-type: none;
@@ -9,11 +9,10 @@
     border-radius: 2px;
     font-size: 12px;
     font-weight: 400;
-    color: whitesmoke;
-    box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, 0.3);
+    box-shadow: var(--scx-box-shadow);
     max-height: 500px;
     overflow: auto;
-    backdrop-filter: blur(8px);
+    backdrop-filter: var(--scx-glass-bg-filter);
 }
 
 .scx-contextmenu li {
@@ -23,8 +22,8 @@
 }
 
 .scx-contextmenu li:hover {
-    background: rgba(72, 147, 73, 0.25);
-    color: rgb(72, 147, 73);
+    background: var(--scx-theme);
+    color: var(--scx-bg);
 }
 
 .scx-contextmenu-transition-leave-active,
