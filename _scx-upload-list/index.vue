@@ -5,10 +5,12 @@
     <input ref="hiddenInputRef" multiple placeholder="file" style="display: none" type="file"
            @change="onHiddenInputChange">
 
-    <scx-group v-model="uploadInfoList" :show-move-button="!disabled" :show-remove-button="!disabled">
+    <scx-group v-model="uploadInfoList" :before-remove="beforeRemove" :show-move-button="!disabled" :show-remove-button="!disabled">
       <template v-if="!disabled" #before>
         <!-- 上传按钮 -->
-        <button class="upload-button" type="button" @click="selectFile">点击上传, 当前共 {{ proxyModelValue.length }} 个文件</button>
+        <button class="upload-button" type="button" @click="selectFile">
+          点击上传, 当前共 {{ proxyModelValue.length }} 个文件
+        </button>
       </template>
       <template #default="{index,item}">
         <img :src="item.previewURL" alt="img" class="preview-image">
@@ -68,6 +70,10 @@ export default {
     disabled: { //若为 true 则只具有展示效果 不能上传删除和排序
       type: Boolean,
       default: false
+    },
+    beforeDelete: {
+      type: Function,
+      default: null
     }
   },
   setup(props, ctx) {
@@ -126,7 +132,7 @@ export default {
     //上传文件
     async function callUploadHandler(needUploadFiles) {
       if (props.beforeUpload) {
-        const result = props.beforeUpload(needUploadFiles);
+        const result = await props.beforeUpload(needUploadFiles);
         if (!result) {
           return;
         }
@@ -207,10 +213,13 @@ export default {
 
     watch(uploadInfoList, (newVal) => callProxyModelHandler(newVal), {deep: true});
 
+    const beforeRemove = props.beforeDelete ? (info) => props.beforeDelete(info.copy()) : null;
+
     return {
       hiddenInputRef,
       uploadInfoList,
       proxyModelValue,
+      beforeRemove,
       onHiddenInputChange,
       selectFile,
     }

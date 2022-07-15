@@ -1,6 +1,6 @@
 <template>
   <p>这个添加了类型校验</p>
-  <scx-upload v-model="nowFile" :before-upload="b"/>
+  <scx-upload v-model="nowFile" :before-delete="k" :before-upload="b"/>
   <p>这个没有添加类型校验</p>
   <scx-upload v-model="nowFile" disabled/>
   <br>
@@ -23,4 +23,17 @@ function b(file) {
     return false;
   }
 }
+
+function k(fileInfo) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      console.log(fileInfo)
+      //这里修改是不会影响上传组件的
+      fileInfo.previewURL = "123"
+      alert("不允许删除")
+      resolve(false)
+    }, 1000);
+  })
+}
+
 </script>
