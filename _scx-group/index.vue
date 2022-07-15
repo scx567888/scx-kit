@@ -81,30 +81,33 @@ export default {
       }
     })
 
-    function groupItemRemove(index) {
+    async function groupItemRemove(index) {
       if (props.beforeRemove) {
         //如果返回值是 false 则不添加
-        if (!props.beforeRemove(list.value[index])) {
+        const result = await props.beforeRemove(list.value[index]);
+        if (!result) {
           return;
         }
       }
       list.value = removeByIndex(list.value, index);
     }
 
-    function groupItemMoveUp(index) {
+    async function groupItemMoveUp(index) {
       if (props.beforeMoveUp) {
         //如果返回值是 false 则不添加
-        if (!props.beforeMoveUp(index)) {
+        const result = await props.beforeMoveUp(index);
+        if (!result) {
           return;
         }
       }
       list.value = moveUpByIndex(list.value, index, props.loop);
     }
 
-    function groupItemMoveDown(index) {
+    async function groupItemMoveDown(index) {
       if (props.beforeMoveDown) {
         //如果返回值是 false 则不添加
-        if (!props.beforeMoveDown(index)) {
+        const result = await props.beforeMoveDown(index);
+        if (!result) {
           return;
         }
       }

@@ -1,3 +1,7 @@
+.scx-upload-list {
+    width: 100%;
+}
+
 .scx-upload-list > .scx-group {
     padding: 0;
 }
