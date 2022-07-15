@@ -18,9 +18,9 @@
       </div>
       <!-- 操作项 -->
       <div class="operation">
-        <div class="item-download" @click="downloadFile">
+        <a :href="uploadInfo.downloadURL" class="item-download">
           下载
-        </div>
+        </a>
         <div v-if="!disabled" class="item-replace" @click="selectFile">
           替换
         </div>
@@ -68,7 +68,6 @@ import './index.css'
 import {computed, inject, reactive, ref, watch} from "vue";
 import ScxIcon from "../_scx-icon/index.vue";
 import ScxProgress from "../_scx-progress/index.vue";
-import {download} from "../vanilla-download.js";
 import {percentage} from "../vanilla-percentage.js";
 import {ScxFSSHelper, UploadInfo} from "./helper.js";
 
@@ -102,6 +101,10 @@ export default {
     disabled: {
       type: Boolean,
       default: false
+    },
+    beforeDelete: {
+      type: Function,
+      default: null
     }
   },
   setup(props, ctx) {
@@ -144,25 +147,21 @@ export default {
       }
     });
 
-    function deleteFile() {
+    async function deleteFile() {
+      if (props.beforeDelete) {
+        const result = await props.beforeDelete(uploadInfo.copy());
+        if (!result) {
+          return;
+        }
+      }
       proxyModelValue.value = '';
     }
 
     const uploadInfo = reactive(new UploadInfo());
 
-    function downloadFile() {
-      if (uploadInfo && uploadInfo.downloadURL) {
-        if (uploadInfo.fileName) {
-          download(uploadInfo.downloadURL, uploadInfo.fileName);
-        } else {
-          download(uploadInfo.downloadURL);
-        }
-      }
-    }
-
     async function callUploadHandler(needUploadFile) {
       if (props.beforeUpload) {
-        const result = props.beforeUpload(needUploadFile);
+        const result = await props.beforeUpload(needUploadFile);
         if (!result) {
           return;
         }
@@ -182,6 +181,7 @@ export default {
       } catch (e) {
         getOnError()(e, needUploadFile);
       }
+      uploadInfo.progressState = "上传完毕";
       uploadInfo.progressVisible = false;
       uploadInfo.progressValue = 0;
     }
@@ -224,7 +224,6 @@ export default {
       onHiddenInputChange,
       selectFile,
       deleteFile,
-      downloadFile,
       callDrop,
       callDragover,
       callDragleave

@@ -60,12 +60,11 @@
     width: 100%;
     height: 30px;
     display: flex;
-    color: white;
-    font-weight: 600;
 }
 
 /*操作项子元素*/
-.scx-upload .operation > div {
+.scx-upload .operation > div,
+.scx-upload .operation > a {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -76,9 +75,13 @@
     opacity: 50%;
     transition: 200ms ease-in-out opacity;
     cursor: pointer;
+    color: white;
+    font-weight: 600;
+    text-decoration: unset;
 }
 
-.scx-upload .operation > div:hover {
+.scx-upload .operation > div:hover,
+.scx-upload .operation > a:hover {
     opacity: 100%;
 }
 
