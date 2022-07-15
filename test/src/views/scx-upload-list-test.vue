@@ -1,8 +1,10 @@
 <template>
-  <scx-upload-list v-model="nowFiles" :before-upload="b"/>
-  <br>
-  <scx-upload-list v-model="nowFiles" disabled/>
-  {{ nowFiles }}
+  <div style="width: 700px">
+    <scx-upload-list v-model="nowFiles" :before-delete="l" :before-upload="b"/>
+    <br>
+    <scx-upload-list v-model="nowFiles" disabled/>
+    {{ nowFiles }}
+  </div>
 
 </template>
 
@@ -22,5 +24,16 @@ function b(files) {
     }
   }
   return true;
+}
+
+function l(a) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      console.log(a)
+      alert("不允许删除");
+      a.previewURL = "123"
+      resolve(false);
+    }, 1000);
+  })
 }
 </script>
