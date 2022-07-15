@@ -60,23 +60,45 @@ class UploadInfo {
      */
     fileSizeDisplay = null;
 
+    /**
+     * 文件实际大小
+     * @type {null}
+     */
+    fileSize = null;
+
+    /**
+     * 文件 fssObjectID
+     * @type {null}
+     */
+    fssObjectID = null;
+
     reset() {
         this.fileName = null;
         this.previewURL = null;
         this.downloadURL = null;
         this.uploadTime = null;
         this.fileSizeDisplay = null;
+        this.fileSize = null;
+        this.fssObjectID = null;
+        return this;
     }
 
     fill(rawOptions) {
         const {
-            fileName, previewURL, downloadURL, uploadTime, fileSizeDisplay
+            fileName, previewURL, downloadURL, uploadTime, fileSizeDisplay, fileSize, fssObjectID
         } = rawOptions;
         this.fileName = fileName;
         this.previewURL = previewURL;
         this.downloadURL = downloadURL;
         this.uploadTime = uploadTime;
         this.fileSizeDisplay = fileSizeDisplay;
+        this.fileSize = fileSize;
+        this.fssObjectID = fssObjectID;
+        return this;
+    }
+
+    copy() {
+        return new UploadInfo().fill(this);
     }
 
 }
